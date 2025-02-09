@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const indexRouter = require('./routers/indexRouter');
+const userRouter = require('./routers/userRouter');
 const connectDB = require('./database');
 
 const app = express();
@@ -17,7 +18,7 @@ app.use(express.static('www'));
 
 // Initialize routes
 app.use('/', indexRouter);
-
+app.use('/user/', userRouter);
 // Connect to MongoDB and then start the server
 connectDB()
   .then(() => {
