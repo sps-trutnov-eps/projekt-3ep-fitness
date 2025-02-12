@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+
 const indexRouter = require('./routers/indexRouter');
 const userRouter = require('./routers/userRouter');
 const connectDB = require('./database');
@@ -12,6 +14,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 app.set('views', 'src/views');
+
+// Setup sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'yourSecretKey',
+  resave: false,
+  saveUninitialized: false
+}));
 
 // Server static files
 app.use(express.static('www'));
