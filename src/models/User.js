@@ -7,6 +7,12 @@ const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    weights: [
+      {
+        value: { type: Number, required: true },
+        date: { type: Date, default: Date.now }
+      }
+    ]
   },
   { timestamps: true }
 );
