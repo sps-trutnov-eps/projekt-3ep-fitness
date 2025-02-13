@@ -95,3 +95,30 @@ exports.profileGet = async (req, res) => {
     });
   }
 };
+
+exports.saveWeight = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).redirect('/user/login');
+    }
+
+    const { weight } = req.body;
+    if (!weight) {
+      return res.status(400).send('Weight is required');
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).redirect('/user/login');
+    }
+
+    user.weights.push({ value: weight, date: new Date() });
+    await user.save();
+
+    res.render('profile', { title: 'Profile', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
