@@ -113,6 +113,25 @@ exports.saveWeight = async (req, res) => {
       return res.status(404).redirect('/user/login');
     }
 
+    // Získáme dnešní datum nastavené na půlnoc
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const alreadyLogged = user.weights.some(entry => {
+      const entryDate = new Date(entry.date);
+      entryDate.setHours(0, 0, 0, 0);
+      return entryDate.getTime() === today.getTime();
+    });
+
+    if (alreadyLogged) {
+      return res.render('profile', { 
+        title: 'Profile', 
+        user, 
+        error: 'You have already logged your weight for today.' 
+      });
+    }
+
+    // Přidání nové váhy
     user.weights.push({ value: weight, date: new Date() });
     await user.save();
 
