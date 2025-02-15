@@ -3,6 +3,23 @@
   <h2>Profile</h2>
   <% if (user) { %>
     <p>Welcome, <%= user.username %></p>
+
+    <form action="/user/weight" method="POST">
+      <label for="weight">Enter your weight (kg):</label>
+      <input type="number" name="weight" id="weight" step="0.1" required />
+      <button type="submit">Save</button>
+    </form>
+
+    <h3>Your weight history:</h3>
+    <ul>
+      <% if (user.weights && user.weights.length > 0) { %>
+        <% user.weights.forEach(weightEntry => { %>
+          <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
+        <% }) %>
+      <% } else { %>
+        <p>No weight records found.</p>
+      <% } %>
+    </ul>
   <% } else { %>
     <p>No user data available.</p>
   <% } %>

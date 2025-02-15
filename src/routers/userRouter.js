@@ -13,4 +13,6 @@ router.get('/logout', userController.logoutGet);
 
 router.get('/profile', userController.profileGet);
 
+router.post('/weight', userController.saveWeight);
+
 module.exports = router;
