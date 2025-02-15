@@ -141,3 +141,16 @@ exports.saveWeight = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.logoutGet = (req, res) => {
+  req.session.destroy((error) => {
+    if (error) {
+      console.error('Error destroying session:', error);
+      // Optionally redirect back to profile if session destroy fails
+      return res.redirect('/user/profile');
+    }
+    // Clear the cookie set by the session middleware
+    res.clearCookie('connect.sid');
+    res.redirect('/');
+  });
+};
