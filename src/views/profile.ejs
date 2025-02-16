@@ -2,27 +2,26 @@
 <div class="container">
   <h2>Profile</h2>
   <% if (user) { %>
-    <p>Welcome, <%= user.username %></p>
+  <p>Welcome, <%= user.username %></p>
 
-    <form action="/user/weight" method="POST">
-      <label for="weight">Enter your weight (kg):</label>
-      <input type="number" name="weight" id="weight" step="0.1" required />
-      <button type="submit">Save</button>
-    </form>
+  <form action="/user/weight" method="POST">
+    <label for="weight">Enter your weight (kg):</label>
+    <input type="number" name="weight" id="weight" step="0.1" required />
+    <button type="submit">Save</button>
+  </form>
 
-    <h3>Your weight history:</h3>
-    <ul>
-      <% if (user.weights && user.weights.length > 0) { %>
-        <% user.weights.forEach(weightEntry => { %>
-          <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
-        <% }) %>
-      <% } else { %>
-        <p>No weight records found.</p>
-      <% } %>
-    </ul>
+  <h3>Your weight history:</h3>
+  <ul>
+    <% if (user.weights && user.weights.length > 0) { %> <%
+    user.weights.forEach(weightEntry => { %>
+    <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
+    <% }) %> <% } else { %>
+    <p>No weight records found.</p>
+    <% } %>
+  </ul>
 
   <% } else { %>
-    <p>No user data available.</p>
+  <p>No user data available.</p>
   <% } %>
 
   <h3>Set your daily calorie goal:</h3>
@@ -31,10 +30,92 @@
     <input type="number" name="calorieGoal" id="calorieGoal" required min="0" />
     <button type="submit">Save Goal</button>
   </form>
-  
-  <% if (user.dailyCalorieGoal) { %>
-    <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
-  <% } %>
 
+  <% if (user.dailyCalorieGoal) { %>
+  <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
+  <% } %>
+  <h3>Your Daily Activities</h3>
+  <!-- Scrollable activity list -->
+  <div
+    id="activity-list"
+    style="
+      overflow-y: auto;
+      height: 200px;
+      border: 1px solid #ccc;
+      padding: 5px;
+    ">
+    <ul>
+      <!-- Predefined cardio options -->
+      <li data-type="running" style="cursor: pointer">Running</li>
+      <li data-type="cycling" style="cursor: pointer">Cycling</li>
+      <li data-type="swimming" style="cursor: pointer">Swimming</li>
+      <li data-type="walking" style="cursor: pointer">Walking</li>
+      <li data-type="custom" style="cursor: pointer">Custom</li>
+    </ul>
+  </div>
+
+  <!-- Hidden form that appears upon clicking an activity -->
+  <div id="activity-form" style="display: none; margin-top: 20px">
+    <h4>Log Activity: <span id="selected-activity"></span></h4>
+    <form id="activityForm">
+      <input type="hidden" name="activityType" id="activityType" />
+      <div>
+        <label for="duration">Duration (minutes):</label>
+        <input type="number" name="duration" id="duration" required min="1" />
+      </div>
+      <div id="customCalories" style="display: none">
+        <label for="burnedCalories">Calories Burned:</label>
+        <input
+          type="number"
+          name="burnedCalories"
+          id="burnedCalories"
+          min="0" />
+      </div>
+      <button type="submit">Save Activity</button>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // When an activity is clicked, show the activity form.
+      $("#activity-list li").on("click", function () {
+        var activityType = $(this).data("type");
+        $("#activityType").val(activityType);
+        $("#selected-activity").text(
+          activityType.charAt(0).toUpperCase() + activityType.slice(1)
+        );
+        // For custom activity, show extra field.
+        if (activityType.toLowerCase() === "custom") {
+          $("#customCalories").show();
+        } else {
+          $("#customCalories").hide();
+        }
+        $("#activity-form").show();
+      });
+
+      // AJAX: Submit the activity form.
+      $("#activityForm").on("submit", function (e) {
+        e.preventDefault();
+        $.ajax({
+          url: "/user/activity",
+          method: "POST",
+          data: $(this).serialize(),
+          success: function (response) {
+            alert("Activity saved successfully.");
+            // Optionally, update the UI with new activity data.
+            location.reload();
+          },
+          error: function (xhr) {
+            var errMsg =
+              xhr.responseJSON && xhr.responseJSON.error
+                ? xhr.responseJSON.error
+                : "Error saving activity";
+            alert(errMsg);
+          },
+        });
+      });
+    });
+  </script>
 </div>
 <%- include('_layout/footer') %>

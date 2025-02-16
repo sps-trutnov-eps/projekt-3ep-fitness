@@ -17,4 +17,5 @@ router.post('/weight', userController.saveWeight);
 
 router.post('/calorie-goal', userController.setCalorieGoal);
 
+router.post('/activity', userController.saveActivity);
 module.exports = router;
