@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Activity = require('../models/Activity');
 
 exports.registerGet = (req, res) => {
   res.render('register', { title: 'Register' });
@@ -181,4 +182,63 @@ exports.logoutGet = (req, res) => {
     res.clearCookie('connect.sid');
     res.redirect('/');
   });
+};
+exports.saveActivity = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { activityType, duration, burnedCalories } = req.body;
+    if (!activityType || !duration) {
+      return res.status(400).json({ error: 'Missing fields' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get the most recent weight entry if exists.
+    let userWeight = user.weights && user.weights.length > 0
+      ? user.weights[user.weights.length - 1].value
+      : null;
+
+    let calories;
+    if (activityType.toLowerCase() === 'custom') {
+      if (!burnedCalories) {
+        return res.status(400).json({ error: 'Please provide the calories burned for custom activity' });
+      }
+      calories = Number(burnedCalories);
+    } else {
+      if (!userWeight) {
+        return res.status(400).json({ error: 'Please log your weight first to calculate calories burned' });
+      }
+      // Define MET values for known cardio activities.
+      const mets = {
+        running: 9,
+        cycling: 8,
+        swimming: 8.5,
+        walking: 3.8
+      };
+      // Default MET if not found
+      const met = mets[activityType.toLowerCase()] || 5;
+      // Calculate burned calories: weight (kg) * MET * (duration in hours)
+      calories = userWeight * met * (Number(duration) / 60);
+    }
+
+    // Create and save the new activity record.
+    const newActivity = new Activity({
+      user: userId,
+      type: activityType,
+      duration: Number(duration),
+      caloriesBurned: calories
+    });
+    await newActivity.save();
+
+    res.json({ success: true, activity: newActivity });
+  } catch (error) {
+    console.error('Error saving activity:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 };
