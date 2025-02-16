@@ -142,6 +142,34 @@ exports.saveWeight = async (req, res) => {
   }
 };
 
+exports.setCalorieGoal = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).redirect('/user/login');
+    }
+
+    const { calorieGoal } = req.body;
+    if (!calorieGoal || calorieGoal < 0) {
+      return res.status(400).send('Invalid calorie goal');
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).redirect('/user/login');
+    }
+
+    user.dailyCalorieGoal = calorieGoal;
+    await user.save();
+
+    res.render('profile', { title: 'Profile', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+
 exports.logoutGet = (req, res) => {
   req.session.destroy((error) => {
     if (error) {
