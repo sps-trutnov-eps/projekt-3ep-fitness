@@ -76,26 +76,28 @@ exports.loginPost = async (req, res) => {
 
 exports.profileGet = async (req, res) => {
   try {
-    
     const userId = req.session.userId;
     if (!userId) {
       return res.redirect('/user/login');
     }
-    
+
     const user = await User.findById(userId);
     if (!user) {
       return res.redirect('/user/login');
     }
-    
-    res.render('profile', { title: 'Profile', user });
+
+    // Fetch all activities for the user and sum up calories burned
+    const activities = await Activity.find({ user: userId });
+    const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
+
+    res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
 
   } catch (error) {
     console.error('Error fetching profile:', error);
-    res.render('/', { 
-      title: 'Home' 
-    });
+    res.render('/', { title: 'Home' });
   }
 };
+
 
 exports.saveWeight = async (req, res) => {
   try {
@@ -114,7 +116,7 @@ exports.saveWeight = async (req, res) => {
       return res.status(404).redirect('/user/login');
     }
 
-    // Získáme dnešní datum nastavené na půlnoc
+    // Check if weight has already been logged today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -125,23 +127,33 @@ exports.saveWeight = async (req, res) => {
     });
 
     if (alreadyLogged) {
+      // Fetch activities for total calories burned before rendering profile
+      const activities = await Activity.find({ user: userId });
+      const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
+
       return res.render('profile', { 
         title: 'Profile', 
         user, 
+        totalCaloriesBurned,
         error: 'You have already logged your weight for today.' 
       });
     }
 
-    // Přidání nové váhy
+    // Add new weight entry
     user.weights.push({ value: weight, date: new Date() });
     await user.save();
 
-    res.render('profile', { title: 'Profile', user });
+    // Fetch updated activities
+    const activities = await Activity.find({ user: userId });
+    const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
+
+    res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
   }
 };
+
 
 exports.setCalorieGoal = async (req, res) => {
   try {
@@ -163,7 +175,11 @@ exports.setCalorieGoal = async (req, res) => {
     user.dailyCalorieGoal = calorieGoal;
     await user.save();
 
-    res.render('profile', { title: 'Profile', user });
+    // Fetch all activities to calculate total calories burned
+    const activities = await Activity.find({ user: userId });
+    const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
+
+    res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
