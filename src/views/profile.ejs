@@ -76,9 +76,30 @@
   </div>
 
 
-  <h3>Calories Burned</h3>
-  <p>Total calories burned from activities: <%= totalCaloriesBurned %> kcal</p>
+  <h3>Calories Burned (today)</h3>
+  <p>Total calories burned (today) from activities: <%= totalCaloriesBurned %> kcal</p>
 
+  <h3>Today's Activities</h3>
+
+  <% if (activities && activities.length > 0) { %>
+    <table border="1">
+      <tr>
+        <th>Activity</th>
+        <th>Duration (min)</th>
+        <th>Calories Burned</th>
+      </tr>
+      <% activities.forEach(activity => { %>
+        <tr>
+          <td><%= activity.name %></td>
+          <td><%= activity.duration %></td>
+          <td><%= activity.caloriesBurned %> kcal</td>
+        </tr>
+      <% }); %>
+    </table>
+  <% } else { %>
+    <p>No activities recorded today.</p>
+  <% } %>
+  
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $(document).ready(function () {

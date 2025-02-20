@@ -86,17 +86,33 @@ exports.profileGet = async (req, res) => {
       return res.redirect('/user/login');
     }
 
-    // Fetch all activities for the user and sum up calories burned
-    const activities = await Activity.find({ user: userId });
+    // Get today's date range
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Fetch today's activities
+    const activities = await Activity.find({
+      user: userId,
+      date: { $gte: today, $lt: tomorrow }
+    });
+
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
-    res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
+    res.render('profile', { 
+      title: 'Profile', 
+      user, 
+      activities, // Pass activities to EJS
+      totalCaloriesBurned
+    });
 
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.render('/', { title: 'Home' });
+    console.error(error);
+    res.status(500).send('Server error');
   }
 };
+
 
 
 exports.saveWeight = async (req, res) => {
@@ -116,7 +132,7 @@ exports.saveWeight = async (req, res) => {
       return res.status(404).redirect('/user/login');
     }
 
-    // Get today's start and end time
+    // Get today's date range
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -130,7 +146,6 @@ exports.saveWeight = async (req, res) => {
     });
 
     if (alreadyLogged) {
-      // Fetch only today's activities
       const activities = await Activity.find({
         user: userId,
         date: { $gte: today, $lt: tomorrow }
@@ -142,6 +157,7 @@ exports.saveWeight = async (req, res) => {
         title: 'Profile', 
         user, 
         totalCaloriesBurned,
+        activities,
         error: 'You have already logged your weight for today.' 
       });
     }
@@ -150,7 +166,6 @@ exports.saveWeight = async (req, res) => {
     user.weights.push({ value: weight, date: new Date() });
     await user.save();
 
-    // Fetch only today's activities
     const activities = await Activity.find({
       user: userId,
       date: { $gte: today, $lt: tomorrow }
@@ -158,14 +173,12 @@ exports.saveWeight = async (req, res) => {
 
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
-    res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
+    res.render('profile', { title: 'Profile', user, totalCaloriesBurned, activities });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
   }
 };
-
-
 
 exports.setCalorieGoal = async (req, res) => {
   try {
@@ -187,27 +200,26 @@ exports.setCalorieGoal = async (req, res) => {
     user.dailyCalorieGoal = calorieGoal;
     await user.save();
 
-    // Get today's start and end time
+    // Get today's date range
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Fetch only today's activities
+    // Fetch today's activities
     const activities = await Activity.find({
       user: userId,
-      date: { $gte: today, $lt: tomorrow }  // Activities from today only
+      date: { $gte: today, $lt: tomorrow }
     });
 
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
-    res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
+    res.render('profile', { title: 'Profile', user, totalCaloriesBurned, activities });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
   }
 };
-
 
 
 exports.logoutGet = (req, res) => {
