@@ -116,10 +116,13 @@ exports.saveWeight = async (req, res) => {
       return res.status(404).redirect('/user/login');
     }
 
-    // Check if weight has already been logged today
+    // Get today's start and end time
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
+    // Check if weight has already been logged today
     const alreadyLogged = user.weights.some(entry => {
       const entryDate = new Date(entry.date);
       entryDate.setHours(0, 0, 0, 0);
@@ -127,8 +130,12 @@ exports.saveWeight = async (req, res) => {
     });
 
     if (alreadyLogged) {
-      // Fetch activities for total calories burned before rendering profile
-      const activities = await Activity.find({ user: userId });
+      // Fetch only today's activities
+      const activities = await Activity.find({
+        user: userId,
+        date: { $gte: today, $lt: tomorrow }
+      });
+
       const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
       return res.render('profile', { 
@@ -143,8 +150,12 @@ exports.saveWeight = async (req, res) => {
     user.weights.push({ value: weight, date: new Date() });
     await user.save();
 
-    // Fetch updated activities
-    const activities = await Activity.find({ user: userId });
+    // Fetch only today's activities
+    const activities = await Activity.find({
+      user: userId,
+      date: { $gte: today, $lt: tomorrow }
+    });
+
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
     res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
@@ -153,6 +164,7 @@ exports.saveWeight = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
 
 
 exports.setCalorieGoal = async (req, res) => {
@@ -175,8 +187,18 @@ exports.setCalorieGoal = async (req, res) => {
     user.dailyCalorieGoal = calorieGoal;
     await user.save();
 
-    // Fetch all activities to calculate total calories burned
-    const activities = await Activity.find({ user: userId });
+    // Get today's start and end time
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Fetch only today's activities
+    const activities = await Activity.find({
+      user: userId,
+      date: { $gte: today, $lt: tomorrow }  // Activities from today only
+    });
+
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
     res.render('profile', { title: 'Profile', user, totalCaloriesBurned });
@@ -185,6 +207,7 @@ exports.setCalorieGoal = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
 
 
 exports.logoutGet = (req, res) => {
