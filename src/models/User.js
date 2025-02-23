@@ -12,7 +12,8 @@ const userSchema = new mongoose.Schema(
         value: { type: Number, required: true },
         date: { type: Date, default: Date.now }
       }
-    ]
+    ],
+    dailyCalorieGoal: { type: Number, default: 2000 }
   },
   { timestamps: true }
 );
