@@ -20,6 +20,9 @@
     <% } %>
   </ul>
 
+  <!-- Include the weight chart block -->
+  <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
+
   <% } else { %>
   <p>No user data available.</p>
   <% } %>
