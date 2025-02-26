@@ -275,7 +275,7 @@ exports.saveActivity = async (req, res) => {
       // Default MET if not found
       const met = mets[activityType.toLowerCase()] || 5;
       // Calculate burned calories: weight (kg) * MET * (duration in hours)
-      calories = userWeight * met * (Number(duration) / 60);
+      calories = userWeight * met * (Number(duration) / 60).toFixed(0);
     }
 
     // Create and save the new activity record.
