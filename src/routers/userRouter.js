@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const userController = require('../controllers/userController');
+const photoUpload = require('../middleware/photoUpload');
 
 router.get('/register', userController.registerGet);
 router.post('/register', userController.registerPost);
@@ -18,4 +19,7 @@ router.post('/weight', userController.saveWeight);
 router.post('/calorie-goal', userController.setCalorieGoal);
 
 router.post('/activity', userController.saveActivity);
+
+router.post('/photo', photoUpload.single('photo'), userController.uploadPhoto);
+
 module.exports = router;

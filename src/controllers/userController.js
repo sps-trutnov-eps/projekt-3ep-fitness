@@ -305,3 +305,49 @@ exports.saveActivity = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.uploadPhoto = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).redirect('/user/login');
+    }
+    
+    // Multer adds the file to req.file
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).redirect('/user/login');
+    }
+
+    // Check if a photo was already uploaded today (based on date only)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const alreadyUploaded = user.photos && user.photos.some(photo => {
+      const photoDate = new Date(photo.date);
+      photoDate.setHours(0, 0, 0, 0);
+      return photoDate.getTime() === today.getTime();
+    });
+
+    if (alreadyUploaded) {
+      return res.status(400).send('You have already uploaded a photo today.');
+    }
+
+    // Ensure the photos array exists on the user document
+    if (!user.photos) {
+      user.photos = [];
+    }
+
+    // Save the photo filename and current date
+    user.photos.push({ imagePath: req.file.filename, date: new Date() });
+    await user.save();
+
+    return res.redirect('/user/profile');
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send('Server error');
+  }
+};
