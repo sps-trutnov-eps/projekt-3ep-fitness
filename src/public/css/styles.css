@@ -1,0 +1,38 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+.chart-container {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+#activity-list {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+}
+
+#activity-list li {
+  padding: 10px;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+}
+
+#activity-list li:hover {
+  background-color: #f1f1f1;
+}
+
+#activity-form {
+  background: #fff;
+  padding: 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin-top: 20px;
+}
