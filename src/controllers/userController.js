@@ -129,8 +129,13 @@ exports.saveWeight = async (req, res) => {
     }
 
     const { weight } = req.body;
-    if (!weight) {
+    if (weight === undefined) {
       return res.status(400).send('Weight is required');
+    }
+    
+    const parsedWeight = parseFloat(weight);
+    if (parsedWeight < 0) {
+      return res.status(400).send('Weight cannot be negative');
     }
 
     const user = await User.findById(userId);
@@ -154,7 +159,7 @@ exports.saveWeight = async (req, res) => {
     let error = null;
     if (!alreadyLogged) {
       // Add new weight entry if not already logged
-      user.weights.push({ value: weight, date: new Date() });
+      user.weights.push({ value: parsedWeight, date: new Date() });
       await user.save();
     } else {
       error = 'You have already logged your weight for today.';
