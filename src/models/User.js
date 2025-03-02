@@ -3,16 +3,16 @@ const bcrypt = require('bcryptjs');
 
 const SALT_WORK_FACTOR = 10;
 
+const weightEntrySchema = new mongoose.Schema({
+  value: { type: Number, required: true, min: [0, 'Weight cannot be negative'] },
+  date: { type: Date, default: Date.now }
+});
+
 const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    weights: [
-      {
-        value: { type: Number, required: true },
-        date: { type: Date, default: Date.now }
-      }
-    ],
+    weights: [ weightEntrySchema ],
     dailyCalorieGoal: { type: Number, default: 2000 }
   },
   { timestamps: true }

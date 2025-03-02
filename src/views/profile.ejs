@@ -6,7 +6,7 @@
 
   <form action="/user/weight" method="POST">
     <label for="weight">Enter your weight (kg):</label>
-    <input type="number" name="weight" id="weight" step="0.1" required />
+    <input type="number" name="weight" id="weight" step="0.1" min="0" required />
     <button type="submit">Save</button>
   </form>
 
@@ -19,6 +19,9 @@
     <p>No weight records found.</p>
     <% } %>
   </ul>
+
+  <!-- Include the weight chart block -->
+  <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
 
   <% } else { %>
   <p>No user data available.</p>

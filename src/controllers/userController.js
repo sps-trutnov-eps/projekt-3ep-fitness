@@ -99,12 +99,18 @@ exports.profileGet = async (req, res) => {
     });
 
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
-
+    
+    // Prepare chart data
+    const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
+    const weightChartData = user.weights.map(entry => entry.value);
+    
     res.render('profile', { 
       title: 'Profile', 
       user, 
       activities, // Pass activities to EJS
-      totalCaloriesBurned
+      totalCaloriesBurned,
+      weightChartLabels,
+      weightChartData
     });
 
   } catch (error) {
@@ -123,8 +129,13 @@ exports.saveWeight = async (req, res) => {
     }
 
     const { weight } = req.body;
-    if (!weight) {
+    if (weight === undefined) {
       return res.status(400).send('Weight is required');
+    }
+    
+    const parsedWeight = parseFloat(weight);
+    if (parsedWeight < 0) {
+      return res.status(400).send('Weight cannot be negative');
     }
 
     const user = await User.findById(userId);
@@ -145,27 +156,16 @@ exports.saveWeight = async (req, res) => {
       return entryDate.getTime() === today.getTime();
     });
 
-    if (alreadyLogged) {
-      const activities = await Activity.find({
-        user: userId,
-        date: { $gte: today, $lt: tomorrow }
-      });
-
-      const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
-
-      return res.render('profile', { 
-        title: 'Profile', 
-        user, 
-        totalCaloriesBurned,
-        activities,
-        error: 'You have already logged your weight for today.' 
-      });
+    let error = null;
+    if (!alreadyLogged) {
+      // Add new weight entry if not already logged
+      user.weights.push({ value: parsedWeight, date: new Date() });
+      await user.save();
+    } else {
+      error = 'You have already logged your weight for today.';
     }
 
-    // Add new weight entry
-    user.weights.push({ value: weight, date: new Date() });
-    await user.save();
-
+    // Fetch today's activities
     const activities = await Activity.find({
       user: userId,
       date: { $gte: today, $lt: tomorrow }
@@ -173,10 +173,22 @@ exports.saveWeight = async (req, res) => {
 
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
-    res.render('profile', { title: 'Profile', user, totalCaloriesBurned, activities });
+    // Prepare chart data
+    const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
+    const weightChartData = user.weights.map(entry => entry.value);
+
+    return res.render('profile', {
+      title: 'Profile',
+      user,
+      totalCaloriesBurned,
+      activities,
+      error,
+      weightChartLabels,
+      weightChartData
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    return res.status(500).send('Server error');
   }
 };
 
