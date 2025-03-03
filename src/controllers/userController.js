@@ -226,7 +226,11 @@ exports.setCalorieGoal = async (req, res) => {
 
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
 
-    res.render('profile', { title: 'Profile', user, totalCaloriesBurned, activities });
+    // Prepare chart data
+    const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
+    const weightChartData = user.weights.map(entry => entry.value);
+    
+    res.render('profile', { title: 'Profile', user, activities, totalCaloriesBurned, weightChartLabels, weightChartData });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
