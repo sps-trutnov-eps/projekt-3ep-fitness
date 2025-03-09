@@ -1,0 +1,28 @@
+<%- include('_layout/header') %>
+<div class="container">
+  <h2>My Progress</h2>
+
+  <% if (user) { %>
+    <!-- Photo Gallery -->
+    <h3>Progress Photos</h3>
+    <% if (photos && photos.length > 0) { %>
+      <div class="photo-gallery" style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <% photos.forEach(photo => { %>
+          <div class="photo" style="flex: 1 0 21%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 5px;">
+            <img src="/uploads/photos/<%= photo.imagePath %>" alt="Progress Photo" style="width: 100%; height: auto;" />
+            <p style="text-align: center;"><%= new Date(photo.date).toLocaleDateString() %></p>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p>No progress photos uploaded yet.</p>
+    <% } %>
+
+    <!-- Weight Chart -->
+    <h3>Weight Chart</h3>
+    <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
+  <% } else { %>
+    <p>User data not found. Please log in.</p>
+  <% } %>
+</div>
+<%- include('_layout/footer') %>
