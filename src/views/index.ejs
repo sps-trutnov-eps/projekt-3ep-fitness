@@ -2,20 +2,78 @@
 'undefined' ? loggedIn : false; %>
 
 <div class="jumbotron text-center">
-  <h1>Welcome to the <%= title %></h1>
-  <p class="lead">
-    Track your fitness, log your weight, and monitor your daily calories burned
-    with our easy-to-use fitness app.
-  </p>
-  <% if (loggedIn) { %>
-  <a class="btn btn-primary btn-lg" href="/user/profile" role="button"
-    >Profile</a
-  >
-  <% } else { %>
-  <a class="btn btn-success btn-lg" href="/user/register" role="button"
-    >Get Started</a
-  >
-  <% } %>
+  <div class="container">
+    <h1 class="display-4">Welcome to the <%= title %></h1>
+    <p class="lead">
+      Track your fitness, log your weight, and monitor your daily calories
+      burned with our easy-to-use fitness app.
+    </p>
+    <% if (loggedIn) { %>
+    <a class="btn btn-primary btn-lg" href="/user/profile" role="button"
+      >Profile</a
+    >
+    <% } else { %>
+    <a class="btn btn-success btn-lg" href="/user/register" role="button"
+      >Get Started</a
+    >
+    <% } %>
+  </div>
+</div>
+
+<div class="container my-5">
+  <div class="row text-center">
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Track Your Progress</h5>
+          <p class="card-text">
+            Log your daily weight and see your progress over time with our
+            interactive charts.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Monitor Your Calories</h5>
+          <p class="card-text">
+            Set personalized calorie goals and watch how much you burn during
+            your activities.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Stay Motivated</h5>
+          <p class="card-text">
+            Get insights, tips, and track your trends to stay motivated every
+            single day.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-5">
+    <h2>Why Choose Our Fitness Tracker?</h2>
+    <p class="lead">
+      Our app makes it simple to manage your fitness goals. Whether you're a
+      beginner or an experienced athlete, our easy-to-use interface provides you
+      with the tools needed to track and optimize your routine.
+    </p>
+    <% if (!loggedIn) { %>
+    <a class="btn btn-success btn-lg" href="/user/register" role="button"
+      >Join Now</a
+    >
+    <% } else { %>
+    <a class="btn btn-primary btn-lg" href="/user/profile" role="button"
+      >View Profile</a
+    >
+    <% } %>
+  </div>
 </div>
 
 <%- include('_layout/footer') %>

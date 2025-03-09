@@ -1,3 +1,23 @@
+/* Ensure html and body take full height */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Use flex layout in the wrapper */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full viewport height */
+}
+
+/* Content takes remaining space */
+.content {
+  flex: 1;
+}
+
+/* Additional existing styles */
 body {
   background-color: #f8f9fa;
 }
