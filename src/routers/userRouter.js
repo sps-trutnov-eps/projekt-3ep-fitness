@@ -22,4 +22,6 @@ router.post('/activity', userController.saveActivity);
 
 router.post('/photo', photoUpload.single('photo'), userController.uploadPhoto);
 
+router.get('/show-progress', userController.showProgressGet);
+
 module.exports = router;

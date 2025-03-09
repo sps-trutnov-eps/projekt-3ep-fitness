@@ -351,3 +351,31 @@ exports.uploadPhoto = async (req, res) => {
     return res.status(500).send('Server error');
   }
 };
+
+exports.showProgressGet = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.redirect('/user/login');
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect('/user/login');
+    }
+    
+    // Prepare chart data for weights
+    const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
+    const weightChartData = user.weights.map(entry => entry.value);
+    
+    res.render('showProgress', { 
+      title: 'My Progress', 
+      user, 
+      photos: user.photos, 
+      weightChartLabels, 
+      weightChartData 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
