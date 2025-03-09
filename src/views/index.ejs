@@ -1,6 +1,17 @@
 <%- include('_layout/header') %> <% var loggedIn = typeof loggedIn !==
 'undefined' ? loggedIn : false; %>
 
+<style>
+  /* Smooth transitions for card hover effects */
+  .card {
+    transition: all 0.6s ease;
+  }
+
+  .card-title {
+    transition: color 0.6s ease;
+  }
+</style>
+
 <div class="jumbotron text-center">
   <div class="container">
     <h1 class="display-4">Welcome to the <%= title %></h1>
@@ -23,7 +34,10 @@
 <div class="container my-5">
   <div class="row text-center">
     <div class="col-lg-4 col-md-6 mb-4">
-      <div class="card shadow-sm h-100">
+      <div
+        class="card shadow-sm h-100 border-hover"
+        onmouseover="this.classList.add('border-primary', 'shadow');this.querySelector('.card-title').classList.add('text-primary')"
+        onmouseout="this.classList.remove('border-primary', 'shadow');this.querySelector('.card-title').classList.remove('text-primary')">
         <div class="card-body">
           <h5 class="card-title">Track Your Progress</h5>
           <p class="card-text">
@@ -34,7 +48,10 @@
       </div>
     </div>
     <div class="col-lg-4 col-md-6 mb-4">
-      <div class="card shadow-sm h-100">
+      <div
+        class="card shadow-sm h-100 border-hover"
+        onmouseover="this.classList.add('border-primary', 'shadow');this.querySelector('.card-title').classList.add('text-primary')"
+        onmouseout="this.classList.remove('border-primary', 'shadow');this.querySelector('.card-title').classList.remove('text-primary')">
         <div class="card-body">
           <h5 class="card-title">Monitor Your Calories</h5>
           <p class="card-text">
@@ -45,7 +62,10 @@
       </div>
     </div>
     <div class="col-lg-4 col-md-6 mb-4">
-      <div class="card shadow-sm h-100">
+      <div
+        class="card shadow-sm h-100 border-hover"
+        onmouseover="this.classList.add('border-primary', 'shadow');this.querySelector('.card-title').classList.add('text-primary')"
+        onmouseout="this.classList.remove('border-primary', 'shadow');this.querySelector('.card-title').classList.remove('text-primary')">
         <div class="card-body">
           <h5 class="card-title">Stay Motivated</h5>
           <p class="card-text">
