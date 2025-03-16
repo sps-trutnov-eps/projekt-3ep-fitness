@@ -1,5 +1,8 @@
 const User = require('../models/User');
 const Activity = require('../models/Activity');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid'); // You'll need to install this: npm install uuid
 
 exports.registerGet = (req, res) => {
   res.render('register', { title: 'Register' });
@@ -313,7 +316,7 @@ exports.uploadPhoto = async (req, res) => {
       return res.status(401).redirect('/user/login');
     }
     
-    // Multer adds the file to req.file
+    // Check if file is in request
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
     }
@@ -323,7 +326,7 @@ exports.uploadPhoto = async (req, res) => {
       return res.status(404).redirect('/user/login');
     }
 
-    // Check if a photo was already uploaded today (based on date only)
+    // Check if a photo was already uploaded today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const alreadyUploaded = user.photos && user.photos.some(photo => {
@@ -336,13 +339,27 @@ exports.uploadPhoto = async (req, res) => {
       return res.status(400).send('You have already uploaded a photo today.');
     }
 
-    // Ensure the photos array exists on the user document
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(__dirname, '../../uploads/photos');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Generate unique filename
+    const fileExtension = path.extname(req.file.originalname);
+    const fileName = `${uuidv4()}${fileExtension}`;
+    const filePath = path.join(uploadsDir, fileName);
+
+    // Write the file to disk
+    fs.writeFileSync(filePath, req.file.buffer);
+
+    // Ensure the photos array exists
     if (!user.photos) {
       user.photos = [];
     }
 
-    // Save the photo filename and current date
-    user.photos.push({ imagePath: req.file.filename, date: new Date() });
+    // Add photo reference to user
+    user.photos.push({ imagePath: fileName, date: new Date() });
     await user.save();
 
     return res.redirect('/user/profile');
