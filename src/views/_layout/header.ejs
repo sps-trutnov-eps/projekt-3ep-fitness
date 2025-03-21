@@ -21,6 +21,7 @@
           <ul class="navbar-nav ml-auto">
             <% var loggedIn = typeof loggedIn !== 'undefined' ? loggedIn : false; %>
             <% if (!loggedIn) { %>
+              <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
               <li class="nav-item"><a class="nav-link" href="/user/profile">Profile</a></li>
               <li class="nav-item"><a class="nav-link" href="/user/logout">Logout</a></li>
             <% } else { %>
