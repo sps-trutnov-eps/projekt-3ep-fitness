@@ -1,27 +1,27 @@
 const express = require('express');
 const router = express.Router();
 
+// Require controllers
+const authController = require('../controllers/authController');
 const userController = require('../controllers/userController');
+const progressController = require('../controllers/progressController');
 const photoUpload = require('../middleware/photoUpload');
 
-router.get('/register', userController.registerGet);
-router.post('/register', userController.registerPost);
+// Auth routes
+router.get('/register', authController.registerGet);
+router.post('/register', authController.registerPost);
+router.get('/login', authController.loginGet);
+router.post('/login', authController.loginPost);
+router.get('/logout', authController.logoutGet);
 
-router.get('/login', userController.loginGet);
-router.post('/login', userController.loginPost);
-
-router.get('/logout', userController.logoutGet);
-
+// User profile routes
 router.get('/profile', userController.profileGet);
-
 router.post('/weight', userController.saveWeight);
-
 router.post('/calorie-goal', userController.setCalorieGoal);
-
 router.post('/activity', userController.saveActivity);
 
-router.post('/photo', photoUpload.single('photo'), userController.uploadPhoto);
-
-router.get('/show-progress', userController.showProgressGet);
+// Progress routes
+router.post('/photo', photoUpload.single('photo'), progressController.uploadPhotoPost);
+router.get('/show-progress', progressController.showProgressGet);
 
 module.exports = router;

@@ -1,99 +1,19 @@
 const User = require('../models/User');
 const Activity = require('../models/Activity');
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid'); // You'll need to install this: npm install uuid
+const { getTodayDateRange, checkAuth } = require('../utils/helpers');
 
-exports.registerGet = (req, res) => {
-  res.render('register', { title: 'Register' });
-};
-
-exports.loginGet = (req, res) => {
-  res.render('login', { title: 'Login' });
-};
-
-exports.registerPost = async (req, res) => {
-  const { username, email, password, confirmPassword } = req.body;
-
-  // Check if passwords match
-  if (password !== confirmPassword) {
-    return res.render('register', {
-      title: 'Register',
-      error: 'Passwords do not match.'
-    });
-  }
-
-  try {
-    // Create and save the new user.
-    // The schema's pre-save hook will handle hashing the password.
-    const user = new User({ username, email, password });
-    await user.save();
-
-    // Redirect to login page after successful registration.
-    res.redirect('/user/login');
-  } catch (error) {
-    console.error('Error during registration:', error);
-    // Optionally pass error details to your view to inform the user.
-    res.render('register', {
-      title: 'Register',
-      error: 'Registration failed. Please try again.'
-    });
-  }
-};
-
-exports.loginPost = async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    // Find the user by username
-    const user = await User.findOne({ username }).exec();
-    if (!user) {
-      return res.render('login', {
-        title: 'Login',
-        error: 'Invalid username or password.'
-      });
-    }
-
-    // Compare the supplied password with the hashed password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.render('login', {
-        title: 'Login',
-        error: 'Invalid username or password.'
-      });
-    }
-
-    // If password is matched, login is successful. Store user details in session and redirect to profile page.
-    req.session.userId = user._id;
-
-    res.redirect('/user/profile');
-
-  } catch (error) {
-    console.error('Error during login:', error);
-    res.render('login', {
-      title: 'Login',
-      error: 'Login failed. Please try again.'
-    });
-  }
-};
-
+// View-returning controllers
 exports.profileGet = async (req, res) => {
   try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.redirect('/user/login');
-    }
+    const userId = checkAuth(req, res);
+    if (!userId) return;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.redirect('/user/login');
     }
 
-    // Get today's date range
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { today, tomorrow } = getTodayDateRange();
 
     // Fetch today's activities
     const activities = await Activity.find({
@@ -110,47 +30,34 @@ exports.profileGet = async (req, res) => {
     res.render('profile', { 
       title: 'Profile', 
       user, 
-      activities, // Pass activities to EJS
+      activities,
       totalCaloriesBurned,
       weightChartLabels,
       weightChartData
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
   }
 };
 
-
-
-exports.saveWeight = async (req, res) => {
+// Regular form submission controllers
+exports.saveWeightPost = async (req, res) => {
   try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.status(401).redirect('/user/login');
-    }
+    const userId = checkAuth(req, res);
+    if (!userId) return;
 
     const { weight } = req.body;
-    if (weight === undefined) {
-      return res.status(400).send('Weight is required');
+    if (!weight || isNaN(weight) || weight < 0) {
+      return res.status(400).send('Valid weight is required');
     }
     
-    const parsedWeight = parseFloat(weight);
-    if (parsedWeight < 0) {
-      return res.status(400).send('Weight cannot be negative');
-    }
-
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).redirect('/user/login');
     }
 
-    // Get today's date range
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { today } = getTodayDateRange();
 
     // Check if weight has already been logged today
     const alreadyLogged = user.weights.some(entry => {
@@ -159,48 +66,22 @@ exports.saveWeight = async (req, res) => {
       return entryDate.getTime() === today.getTime();
     });
 
-    let error = null;
     if (!alreadyLogged) {
-      // Add new weight entry if not already logged
-      user.weights.push({ value: parsedWeight, date: new Date() });
+      user.weights.push({ value: parseFloat(weight), date: new Date() });
       await user.save();
-    } else {
-      error = 'You have already logged your weight for today.';
     }
 
-    // Fetch today's activities
-    const activities = await Activity.find({
-      user: userId,
-      date: { $gte: today, $lt: tomorrow }
-    });
-
-    const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
-
-    // Prepare chart data
-    const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
-    const weightChartData = user.weights.map(entry => entry.value);
-
-    return res.render('profile', {
-      title: 'Profile',
-      user,
-      totalCaloriesBurned,
-      activities,
-      error,
-      weightChartLabels,
-      weightChartData
-    });
+    return res.redirect('/user/profile');
   } catch (error) {
     console.error(error);
     return res.status(500).send('Server error');
   }
 };
 
-exports.setCalorieGoal = async (req, res) => {
+exports.setCalorieGoalPost = async (req, res) => {
   try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.status(401).redirect('/user/login');
-    }
+    const userId = checkAuth(req, res);
+    if (!userId) return;
 
     const { calorieGoal } = req.body;
     if (!calorieGoal || calorieGoal < 0) {
@@ -215,57 +96,32 @@ exports.setCalorieGoal = async (req, res) => {
     user.dailyCalorieGoal = calorieGoal;
     await user.save();
 
-    // Get today's date range
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // Fetch today's activities
-    const activities = await Activity.find({
-      user: userId,
-      date: { $gte: today, $lt: tomorrow }
-    });
-
-    const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
-
-    res.render('profile', { title: 'Profile', user, totalCaloriesBurned, activities });
+    return res.redirect('/user/profile');
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
   }
 };
 
-
-exports.logoutGet = (req, res) => {
-  req.session.destroy((error) => {
-    if (error) {
-      console.error('Error destroying session:', error);
-      // Optionally redirect back to profile if session destroy fails
-      return res.redirect('/user/profile');
-    }
-    // Clear the cookie set by the session middleware
-    res.clearCookie('connect.sid');
-    res.redirect('/');
-  });
-};
-exports.saveActivity = async (req, res) => {
+exports.saveActivityPost = async (req, res) => {
   try {
     const userId = req.session.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+
     const { activityType, duration, burnedCalories } = req.body;
     if (!activityType || !duration) {
-      return res.status(400).json({ error: 'Missing fields' });
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Process the activity
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Get the most recent weight entry if exists.
+    // Get the most recent weight entry
     let userWeight = user.weights && user.weights.length > 0
       ? user.weights[user.weights.length - 1].value
       : null;
@@ -273,27 +129,27 @@ exports.saveActivity = async (req, res) => {
     let calories;
     if (activityType.toLowerCase() === 'custom') {
       if (!burnedCalories) {
-        return res.status(400).json({ error: 'Please provide the calories burned for custom activity' });
+        return res.status(400).json({ error: 'Please provide calories burned for custom activity' });
       }
       calories = Number(burnedCalories);
     } else {
       if (!userWeight) {
         return res.status(400).json({ error: 'Please log your weight first to calculate calories burned' });
       }
-      // Define MET values for known cardio activities.
+      
+      // Define MET values for known cardio activities
       const mets = {
         running: 9,
         cycling: 8,
         swimming: 8.5,
         walking: 3.8
       };
-      // Default MET if not found
+      
       const met = mets[activityType.toLowerCase()] || 5;
-      // Calculate burned calories: weight (kg) * MET * (duration in hours)
       calories = userWeight * met * (Number(duration) / 60).toFixed(0);
     }
 
-    // Create and save the new activity record.
+    // Create and save the new activity record
     const newActivity = new Activity({
       user: userId,
       type: activityType,
@@ -306,93 +162,5 @@ exports.saveActivity = async (req, res) => {
   } catch (error) {
     console.error('Error saving activity:', error);
     res.status(500).json({ error: 'Server error' });
-  }
-};
-
-exports.uploadPhoto = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.status(401).redirect('/user/login');
-    }
-    
-    // Check if file is in request
-    if (!req.file) {
-      return res.status(400).send('No file uploaded.');
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).redirect('/user/login');
-    }
-
-    // Check if a photo was already uploaded today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const alreadyUploaded = user.photos && user.photos.some(photo => {
-      const photoDate = new Date(photo.date);
-      photoDate.setHours(0, 0, 0, 0);
-      return photoDate.getTime() === today.getTime();
-    });
-
-    if (alreadyUploaded) {
-      return res.status(400).send('You have already uploaded a photo today.');
-    }
-
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(__dirname, '../../uploads/photos');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    // Generate unique filename
-    const fileExtension = path.extname(req.file.originalname);
-    const fileName = `${uuidv4()}${fileExtension}`;
-    const filePath = path.join(uploadsDir, fileName);
-
-    // Write the file to disk
-    fs.writeFileSync(filePath, req.file.buffer);
-
-    // Ensure the photos array exists
-    if (!user.photos) {
-      user.photos = [];
-    }
-
-    // Add photo reference to user
-    user.photos.push({ imagePath: fileName, date: new Date() });
-    await user.save();
-
-    return res.redirect('/user/profile');
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send('Server error');
-  }
-};
-
-exports.showProgressGet = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.redirect('/user/login');
-    }
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.redirect('/user/login');
-    }
-    
-    // Prepare chart data for weights
-    const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
-    const weightChartData = user.weights.map(entry => entry.value);
-    
-    res.render('showProgress', { 
-      title: 'My Progress', 
-      user, 
-      photos: user.photos, 
-      weightChartLabels, 
-      weightChartData 
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server error');
   }
 };
