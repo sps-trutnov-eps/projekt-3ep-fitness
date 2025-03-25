@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const path = require('path');
 
 const indexRouter = require('./routers/indexRouter');
 const userRouter = require('./routers/userRouter');
@@ -23,7 +24,7 @@ app.use(session({
 }));
 
 // Server static files
-app.use(express.static('www'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize routes
 app.use('/', indexRouter);
