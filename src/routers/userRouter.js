@@ -16,9 +16,9 @@ router.get('/logout', authController.logoutGet);
 
 // User profile routes
 router.get('/profile', userController.profileGet);
-router.post('/weight', userController.saveWeight);
-router.post('/calorie-goal', userController.setCalorieGoal);
-router.post('/activity', userController.saveActivity);
+router.post('/weight', userController.saveWeightPost);
+router.post('/calorie-goal', userController.setCalorieGoalPost);
+router.post('/activity', userController.saveActivityPost);
 
 // Progress routes
 router.post('/photo', photoUpload.single('photo'), progressController.uploadPhotoPost);
