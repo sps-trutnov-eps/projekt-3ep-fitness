@@ -48,13 +48,18 @@ exports.saveWeightPost = async (req, res) => {
     if (!userId) return;
 
     const { weight } = req.body;
-    if (!weight || isNaN(weight) || weight < 0) {
-      return res.status(400).send('Valid weight is required');
+    const weightValue = Number(weight);
+    
+    if (isNaN(weightValue) || weightValue <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid weight'
+      });
     }
     
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).redirect('/user/login');
+      return res.redirect('/user/login');
     }
 
     const { today } = getTodayDateRange();
@@ -66,15 +71,31 @@ exports.saveWeightPost = async (req, res) => {
       return entryDate.getTime() === today.getTime();
     });
 
-    if (!alreadyLogged) {
-      user.weights.push({ value: parseFloat(weight), date: new Date() });
-      await user.save();
+    if (alreadyLogged) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already logged your weight today'
+      });
     }
 
-    return res.redirect('/user/profile');
+    // Save the weight entry
+    user.weights.push({ value: weightValue, date: new Date() });
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Weight logged successfully',
+      data: {
+        weight: weightValue,
+        date: new Date()
+      }
+    });
   } catch (error) {
     console.error(error);
-    return res.status(500).send('Server error');
+    return res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again.'
+    });
   }
 };
 
@@ -84,57 +105,81 @@ exports.setCalorieGoalPost = async (req, res) => {
     if (!userId) return;
 
     const { calorieGoal } = req.body;
-    if (!calorieGoal || calorieGoal < 0) {
-      return res.status(400).send('Invalid calorie goal');
+    
+    // Convert to number and check validity
+    const goal = Number(calorieGoal);
+    if (isNaN(goal) || goal <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid calorie goal'
+      });
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).redirect('/user/login');
+      return res.redirect('/user/login');
     }
 
-    user.dailyCalorieGoal = calorieGoal;
+    user.dailyCalorieGoal = goal;
     await user.save();
 
-    return res.redirect('/user/profile');
+    // Return JSON response for success too
+    return res.status(200).json({
+      success: true,
+      message: 'Calorie goal set successfully',
+      data: {
+        calorieGoal: goal
+      }
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    return res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again.'
+    });
   }
 };
 
 exports.saveActivityPost = async (req, res) => {
   try {
-    const userId = req.session.userId;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    const userId = checkAuth(req, res);
+    if (!userId) return;
+
+    console.log('Activity data received:', req.body); // Debug log
 
     const { activityType, duration, burnedCalories } = req.body;
     if (!activityType || !duration) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Activity type and duration are required'
+      });
     }
 
-    // Process the activity
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.redirect('/user/login');
     }
 
-    // Get the most recent weight entry
+    // Calculate calories...
+    let calories;
     let userWeight = user.weights && user.weights.length > 0
       ? user.weights[user.weights.length - 1].value
       : null;
-
-    let calories;
+      
     if (activityType.toLowerCase() === 'custom') {
-      if (!burnedCalories) {
-        return res.status(400).json({ error: 'Please provide calories burned for custom activity' });
+      if (!burnedCalories || isNaN(Number(burnedCalories)) || Number(burnedCalories) <= 0) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Please provide a valid number of calories burned for custom activity'
+        });
       }
-      calories = Number(burnedCalories);
+      calories = Math.round(Number(burnedCalories));
     } else {
       if (!userWeight) {
-        return res.status(400).json({ error: 'Please log your weight first to calculate calories burned' });
+        return res.status(400).json({ 
+          success: false,
+          message: 'Please log your weight first to calculate calories burned'
+        });
       }
       
       // Define MET values for known cardio activities
@@ -146,7 +191,7 @@ exports.saveActivityPost = async (req, res) => {
       };
       
       const met = mets[activityType.toLowerCase()] || 5;
-      calories = userWeight * met * (Number(duration) / 60).toFixed(0);
+      calories = Math.round(userWeight * met * (Number(duration) / 60));
     }
 
     // Create and save the new activity record
@@ -158,9 +203,22 @@ exports.saveActivityPost = async (req, res) => {
     });
     await newActivity.save();
 
-    res.json({ success: true, activity: newActivity });
+    return res.status(200).json({
+      success: true,
+      message: 'Activity logged successfully',
+      data: {
+        activity: {
+          type: newActivity.type,
+          duration: newActivity.duration,
+          caloriesBurned: newActivity.caloriesBurned
+        }
+      }
+    });
   } catch (error) {
     console.error('Error saving activity:', error);
-    res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again.'
+    });
   }
 };

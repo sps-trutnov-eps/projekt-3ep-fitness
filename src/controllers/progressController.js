@@ -6,19 +6,23 @@ const { getTodayDateRange, checkAuth } = require('../utils/helpers');
 
 exports.uploadPhotoPost = async (req, res) => {
   try {
+    // Check authentication - redirect if not logged in
     const userId = checkAuth(req, res);
     if (!userId) return;
     
     if (!req.file) {
-      return res.status(400).send('No file uploaded.');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No file uploaded' 
+      });
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).redirect('/user/login');
+      return res.redirect('/user/login');
     }
 
-    // Check if a photo was already uploaded today
+    // Check if photo already uploaded today
     const { today } = getTodayDateRange();
     const alreadyUploaded = user.photos && user.photos.some(photo => {
       const photoDate = new Date(photo.date);
@@ -27,7 +31,10 @@ exports.uploadPhotoPost = async (req, res) => {
     });
 
     if (alreadyUploaded) {
-      return res.status(400).send('You have already uploaded a photo today.');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'You have already uploaded a photo today' 
+      });
     }
 
     // Create uploads directory if it doesn't exist
@@ -53,10 +60,16 @@ exports.uploadPhotoPost = async (req, res) => {
     user.photos.push({ imagePath: fileName, date: new Date() });
     await user.save();
 
-    return res.redirect('/user/profile');
+    return res.json({ 
+      success: true, 
+      message: 'Photo uploaded successfully' 
+    });
   } catch (error) {
     console.error(error);
-    return res.status(500).send('Server error');
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again.' 
+    });
   }
 };
 
