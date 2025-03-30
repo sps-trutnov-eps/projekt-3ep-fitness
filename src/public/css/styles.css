@@ -1,5 +1,6 @@
 /* Ensure html and body take full height */
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -59,4 +60,28 @@ body {
 
 section {
   margin-bottom: 1em;
+}
+
+.table-bordered {
+  border: 1px solid #ddd !important;
+}
+
+table {
+  text-align: left;
+  border-collapse: collapse;
+}
+
+thead {
+  border-block-end: 2px solid;
+  background: whitesmoke;
+}
+
+th,
+td {
+  border: 1px solid #f8f9fa;
+  padding: 0.25rem 0.75rem;
+}
+
+td {
+  background-color: white;
 }

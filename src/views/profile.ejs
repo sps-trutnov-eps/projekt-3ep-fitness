@@ -104,12 +104,14 @@
     <h3>Today's Activities</h3>
 
     <% if (activities && activities.length > 0) { %>
-    <table border="1">
-      <tr>
-        <th>Activity</th>
-        <th>Duration (min)</th>
-        <th>Calories Burned</th>
-      </tr>
+    <table class="table-bordered">
+      <thead>
+        <tr>
+          <th>Activity</th>
+          <th>Duration (min)</th>
+          <th>Calories Burned</th>
+        </tr>
+      </thead>
       <% activities.forEach(activity => { %>
       <tr>
         <td><%= activity.type %></td>
