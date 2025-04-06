@@ -110,38 +110,14 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize all forms with MessageSystem
-      
-      // Weight form
-      const weightForm = document.getElementById('weightForm');
-      if (weightForm) {
-        MessageSystem.handleForm(weightForm, {
-          onSuccess: (result) => {
-            setTimeout(() => location.reload(), 1500);
-          }
-        });
-      }
-      
-      // Calorie goal form
-      const calorieForm = document.getElementById('calorieForm');
-      if (calorieForm) {
-        MessageSystem.handleForm(calorieForm, {
-          onSuccess: (result) => {
-            setTimeout(() => location.reload(), 1500);
-          }
-        });
-      }
-
-      // Photo upload form
-      const photoForm = document.getElementById('photoUploadForm');
-      if (photoForm) {
-        MessageSystem.handleForm(photoForm, {
-          resetForm: true,
-          onSuccess: (result) => {
-            setTimeout(() => location.reload(), 1500);
-          }
-        });
-      }
+      const forms = document.querySelectorAll('form[id]');
+      forms.forEach(form => {
+        // Only process forms that should use the message system
+        if (form.id === 'weightForm' || form.id === 'calorieForm' || 
+            form.id === 'photoUploadForm' || form.id === 'activityForm') {
+          MessageSystem.handleForm(form);
+        }
+      });
 
       // Activity form setup
       const activityListItems = document.querySelectorAll("#activity-list li");
@@ -173,18 +149,6 @@
           activityForm.style.display = "block";
         });
       });
-
-      // Explicitly reset the form when it's submitted successfully
-      const activityForm = document.getElementById('activityForm');
-      if (activityForm) {
-        MessageSystem.handleForm(activityForm, {
-          resetForm: true,
-          onSuccess: (result) => {
-            document.getElementById("activity-form").style.display = "none";
-            setTimeout(() => location.reload(), 1500);
-          }
-        });
-      }
     });
   </script>
 </div>
