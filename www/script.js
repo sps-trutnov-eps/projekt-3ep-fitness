@@ -123,50 +123,73 @@ const MessageSystem = {
       try {
         const formData = new FormData(form);
         
-        // Log form data for debugging
-        const formDataObj = {};
-        formData.forEach((value, key) => {
-          formDataObj[key] = value;
-          console.log(`${key}: ${value}`);
-        });
+        // For file uploads, use FormData directly
+        // For regular forms, use URLSearchParams
+        const body = form.enctype === 'multipart/form-data' ? 
+          formData : 
+          new URLSearchParams(formData);
         
-        // For regular forms, use application/x-www-form-urlencoded
-        let body;
-        let headers = {};
+        const headers = form.enctype !== 'multipart/form-data' ? 
+          { 'Content-Type': 'application/x-www-form-urlencoded' } : 
+          {};
         
-        // Special handling for file uploads
-        if (form.enctype === 'multipart/form-data') {
-          body = formData;
-          // Don't set Content-Type for multipart/form-data, 
-          // browser will set it with proper boundary
-        } else {
-          // Convert FormData to URLSearchParams for regular forms
-          body = new URLSearchParams(formData);
-          headers = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          };
-        }
-        
+        // Let fetch follow redirects naturally
         const response = await fetch(form.action, {
           method: form.method,
           body: body,
           headers: headers
         });
         
-        const result = await response.json();
-        console.log('Response:', result);
+        // First check if response is ok (status 200-299)
+        if (!response.ok) {
+          // Try to parse as JSON
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            if (result.message) {
+              this.show(result.message, 'error');
+            } else {
+              this.show('Form submission failed', 'error');
+            }
+          } else {
+            this.show('Server error: ' + response.status, 'error');
+          }
+          return;
+        }
         
-        if (!result.success) {
-          this.show(result.message, 'error');
-        } else {
-          this.show(result.message, 'success');
+        // Handle based on content type
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          // It's JSON - just display the message, don't reload
+          const result = await response.json();
           
-          if (options.resetForm) form.reset();
-          if (options.onSuccess) options.onSuccess(result);
+          if (!result.success) {
+            this.show(result.message || 'Error occurred', 'error');
+          } else {
+            this.show(result.message || 'Success', 'success');
+            
+            // Reset form if option is true
+            if (options.resetForm) {
+              form.reset();
+            }
+          }
+        } else {
+          // It's HTML or a redirect we've already followed
+          // Check if we were redirected
+          if (response.redirected) {
+            // Go to the redirect URL
+            window.location.href = response.url;
+          } else {
+            // For HTML responses (like direct page renders)
+            // This would be unusual in an AJAX context, but handle it anyway
+            console.log('Received HTML response');
+            // You could parse and handle the HTML here if needed
+          }
         }
       } catch (error) {
-        console.error('Error submitting form:', error);
-        this.show('Network error. Please try again.', 'error');
+        console.error('Form submission error:', error);
+        this.show('Error: ' + error.message, 'error');
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

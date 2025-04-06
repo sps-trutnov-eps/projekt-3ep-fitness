@@ -82,14 +82,7 @@ exports.saveWeightPost = async (req, res) => {
     user.weights.push({ value: weightValue, date: new Date() });
     await user.save();
 
-    return res.status(200).json({
-      success: true,
-      message: 'Weight logged successfully',
-      data: {
-        weight: weightValue,
-        date: new Date()
-      }
-    });
+    return res.redirect('/user/profile');
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -123,14 +116,7 @@ exports.setCalorieGoalPost = async (req, res) => {
     user.dailyCalorieGoal = goal;
     await user.save();
 
-    // Return JSON response for success too
-    return res.status(200).json({
-      success: true,
-      message: 'Calorie goal set successfully',
-      data: {
-        calorieGoal: goal
-      }
-    });
+    return res.redirect('/user/profile');
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -203,17 +189,7 @@ exports.saveActivityPost = async (req, res) => {
     });
     await newActivity.save();
 
-    return res.status(200).json({
-      success: true,
-      message: 'Activity logged successfully',
-      data: {
-        activity: {
-          type: newActivity.type,
-          duration: newActivity.duration,
-          caloriesBurned: newActivity.caloriesBurned
-        }
-      }
-    });
+    return res.redirect('/user/profile');
   } catch (error) {
     console.error('Error saving activity:', error);
     return res.status(500).json({
