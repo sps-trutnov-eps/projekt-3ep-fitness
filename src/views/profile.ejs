@@ -1,12 +1,44 @@
 <%- include('_layout/header') %>
 <div class="container">
   <h2>Profile</h2>
+
+  <!-- Flash message display -->
+  <% if (locals.flashMessage) { %>
+    <div class="flash-message <%= flashMessage.type %>" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; 
+         background-color: <%= flashMessage.type === 'error' ? '#FFEBEE' : 
+                             flashMessage.type === 'success' ? '#E8F5E9' : 
+                             flashMessage.type === 'warning' ? '#FFF3E0' : '#E3F2FD' %>; 
+         color: <%= flashMessage.type === 'error' ? '#F44336' : 
+                  flashMessage.type === 'success' ? '#4CAF50' : 
+                  flashMessage.type === 'warning' ? '#FF9800' : '#2196F3' %>;">
+      <%= flashMessage.message %>
+      <button onclick="this.parentElement.style.display='none'" 
+              style="float:right; background: none; border: none; cursor: pointer;">×</button>
+    </div>
+  <% } %>
+
+  <% if (locals.formErrors && locals.formErrors.form === 'activityForm') { %>
+  <script>
+    window.hasActivityFormError = true;
+    <% if (locals.formData && locals.formData.activityType) { %>
+    window.savedActivityType = "<%= locals.formData.activityType %>";
+    window.isCustomActivity = <%= locals.formData.activityType.toLowerCase() === 'custom' ? 'true' : 'false' %>;
+    <% } %>
+  </script>
+  <% } %>
+
   <% if (user) { %>
   <p>Welcome, <%= user.username %></p>
 
   <form action="/user/weight" method="POST" id="weightForm">
     <label for="weight">Enter your weight (kg):</label>
-    <input type="number" name="weight" id="weight" step="0.1" min="0.1" required />
+    <input type="number" name="weight" id="weight" step="0.1" min="0.1" required 
+           value="<%= locals.formData && formData.weight ? formData.weight : '' %>" />
+    <% if (locals.formErrors && formErrors.form === 'weightForm') { %>
+      <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+        <%= formErrors.message %>
+      </div>
+    <% } %>
     <button type="submit">Save</button>
   </form>
 
@@ -14,6 +46,11 @@
     <div class="form-group">
       <label for="photo">Upload Progress Photo</label>
       <input type="file" id="photo" name="photo" accept="image/*" required>
+      <% if (locals.formErrors && formErrors.form === 'photoForm') { %>
+        <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+          <%= formErrors.message %>
+        </div>
+      <% } %>
     </div>
     <button type="submit">Upload Photo</button>
   </form>
@@ -38,7 +75,13 @@
   <h3>Set your daily calorie goal:</h3>
   <form action="/user/calorie-goal" method="POST" id="calorieForm">
     <label for="calorieGoal">Calories (kcal):</label>
-    <input type="number" name="calorieGoal" id="calorieGoal" required min="1" />
+    <input type="number" name="calorieGoal" id="calorieGoal" required min="1" 
+           value="<%= locals.formData && formData.calorieGoal ? formData.calorieGoal : '' %>" />
+    <% if (locals.formErrors && formErrors.form === 'calorieForm') { %>
+      <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+        <%= formErrors.message %>
+      </div>
+    <% } %>
     <button type="submit">Save Goal</button>
   </form>
 
@@ -72,16 +115,22 @@
       <input type="hidden" name="activityType" id="activityType" />
       <div>
         <label for="duration">Duration (minutes):</label>
-        <input type="number" name="duration" id="duration" required min="1" max="1439"/>
+        <input type="number" name="duration" id="duration" required min="1" max="1439"
+               value="<%= locals.formData && formData.duration ? formData.duration : '' %>"/>
       </div>
       <div id="customCalories" style="display: none">
         <label for="burnedCalories">Calories Burned:</label>
-        <input type="number" name="burnedCalories" id="burnedCalories" min="1" />
+        <input type="number" name="burnedCalories" id="burnedCalories" min="1" 
+               value="<%= locals.formData && formData.burnedCalories ? formData.burnedCalories : '' %>"/>
       </div>
+      <% if (locals.formErrors && formErrors.form === 'activityForm') { %>
+        <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+          <%= formErrors.message %>
+        </div>
+      <% } %>
       <button type="submit">Save Activity</button>
     </form>
   </div>
-
 
   <h3>Calories Burned (today)</h3>
   <p>Total calories burned (today) from activities: <%= totalCaloriesBurned.toFixed(0) %> kcal</p>
@@ -110,15 +159,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const forms = document.querySelectorAll('form[id]');
-      forms.forEach(form => {
-        // Only process forms that should use the message system
-        if (form.id === 'weightForm' || form.id === 'calorieForm' || 
-            form.id === 'photoUploadForm' || form.id === 'activityForm') {
-          MessageSystem.handleForm(form);
-        }
-      });
-
       // Activity form setup
       const activityListItems = document.querySelectorAll("#activity-list li");
       activityListItems.forEach(item => {
@@ -149,7 +189,22 @@
           activityForm.style.display = "block";
         });
       });
-    });
+      
+      // Show activity form if there was an error
+      if (window.hasActivityFormError) {
+        document.getElementById('activity-form').style.display = 'block';
+        
+        if (window.savedActivityType) {
+          document.getElementById('activityType').value = window.savedActivityType;
+          document.getElementById('selected-activity').textContent = 
+            window.savedActivityType.charAt(0).toUpperCase() + window.savedActivityType.slice(1);
+            
+          if (window.isCustomActivity) {
+            document.getElementById('customCalories').style.display = 'block';
+          }
+        }
+      }
+    }); // <-- This closing parenthesis was missing
   </script>
 </div>
 <%- include('_layout/footer') %>

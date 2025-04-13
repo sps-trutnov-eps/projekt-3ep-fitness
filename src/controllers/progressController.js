@@ -11,10 +11,8 @@ exports.uploadPhotoPost = async (req, res) => {
     if (!userId) return;
     
     if (!req.file) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'No file uploaded' 
-      });
+      res.formError('photoForm', 'No file uploaded');
+      return res.redirect('/user/profile');
     }
 
     const user = await User.findById(userId);
@@ -31,10 +29,8 @@ exports.uploadPhotoPost = async (req, res) => {
     });
 
     if (alreadyUploaded) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'You have already uploaded a photo today' 
-      });
+      res.formError('photoForm', 'You have already uploaded a photo today');
+      return res.redirect('/user/profile');
     }
 
     // Create uploads directory if it doesn't exist
@@ -60,16 +56,14 @@ exports.uploadPhotoPost = async (req, res) => {
     user.photos.push({ imagePath: fileName, date: new Date() });
     await user.save();
 
-    return res.json({ 
-      success: true, 
-      message: 'Photo uploaded successfully' 
-    });
+    // Set success message
+    res.flash('success', 'Photo uploaded successfully!');
+
+    return res.redirect('/user/profile');
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Server error. Please try again.' 
-    });
+    res.formError('photoForm', 'Server error. Please try again.');
+    return res.redirect('/user/profile');
   }
 };
 
@@ -96,6 +90,7 @@ exports.showProgressGet = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.flash('error', 'Unable to load progress. Please try again.');
+    return res.redirect('/user/profile');
   }
 };

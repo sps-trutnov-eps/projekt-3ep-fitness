@@ -50,11 +50,12 @@ exports.saveWeightPost = async (req, res) => {
     const { weight } = req.body;
     const weightValue = Number(weight);
     
+    // Save form data in case of error
+    res.saveFormData({ weight });
+    
     if (isNaN(weightValue) || weightValue <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please enter a valid weight'
-      });
+      res.formError('weightForm', 'Please enter a valid weight');
+      return res.redirect('/user/profile');
     }
     
     const user = await User.findById(userId);
@@ -72,23 +73,22 @@ exports.saveWeightPost = async (req, res) => {
     });
 
     if (alreadyLogged) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already logged your weight today'
-      });
+      res.formError('weightForm', 'You have already logged your weight today');
+      return res.redirect('/user/profile');
     }
 
     // Save the weight entry
     user.weights.push({ value: weightValue, date: new Date() });
     await user.save();
-
+    
+    // Set success message
+    res.flash('success', 'Weight saved successfully!');
+    
     return res.redirect('/user/profile');
   } catch (error) {
     console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error. Please try again.'
-    });
+    res.formError('weightForm', 'Server error. Please try again.');
+    return res.redirect('/user/profile');
   }
 };
 
@@ -99,13 +99,14 @@ exports.setCalorieGoalPost = async (req, res) => {
 
     const { calorieGoal } = req.body;
     
+    // Save form data in case of error
+    res.saveFormData({ calorieGoal });
+    
     // Convert to number and check validity
     const goal = Number(calorieGoal);
     if (isNaN(goal) || goal <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please enter a valid calorie goal'
-      });
+      res.formError('calorieForm', 'Please enter a valid calorie goal');
+      return res.redirect('/user/profile');
     }
 
     const user = await User.findById(userId);
@@ -116,13 +117,14 @@ exports.setCalorieGoalPost = async (req, res) => {
     user.dailyCalorieGoal = goal;
     await user.save();
 
+    // Set success message
+    res.flash('success', 'Calorie goal saved successfully!');
+
     return res.redirect('/user/profile');
   } catch (error) {
     console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error. Please try again.'
-    });
+    res.formError('calorieForm', 'Server error. Please try again.');
+    return res.redirect('/user/profile');
   }
 };
 
@@ -131,14 +133,14 @@ exports.saveActivityPost = async (req, res) => {
     const userId = checkAuth(req, res);
     if (!userId) return;
 
-    console.log('Activity data received:', req.body); // Debug log
-
     const { activityType, duration, burnedCalories } = req.body;
+    
+    // Save form data in case of error
+    res.saveFormData({ activityType, duration, burnedCalories });
+    
     if (!activityType || !duration) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Activity type and duration are required'
-      });
+      res.formError('activityForm', 'Activity type and duration are required');
+      return res.redirect('/user/profile');
     }
 
     const user = await User.findById(userId);
@@ -146,7 +148,7 @@ exports.saveActivityPost = async (req, res) => {
       return res.redirect('/user/login');
     }
 
-    // Calculate calories...
+    // Calculate calories
     let calories;
     let userWeight = user.weights && user.weights.length > 0
       ? user.weights[user.weights.length - 1].value
@@ -154,18 +156,14 @@ exports.saveActivityPost = async (req, res) => {
       
     if (activityType.toLowerCase() === 'custom') {
       if (!burnedCalories || isNaN(Number(burnedCalories)) || Number(burnedCalories) <= 0) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Please provide a valid number of calories burned for custom activity'
-        });
+        res.formError('activityForm', 'Please provide a valid number of calories burned for custom activity');
+        return res.redirect('/user/profile');
       }
       calories = Math.round(Number(burnedCalories));
     } else {
       if (!userWeight) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Please log your weight first to calculate calories burned'
-        });
+        res.formError('activityForm', 'Please log your weight first to calculate calories burned');
+        return res.redirect('/user/profile');
       }
       
       // Define MET values for known cardio activities
@@ -185,16 +183,18 @@ exports.saveActivityPost = async (req, res) => {
       user: userId,
       type: activityType,
       duration: Number(duration),
-      caloriesBurned: calories
+      caloriesBurned: calories,
+      date: new Date()  // Ensure date is set
     });
     await newActivity.save();
 
+    // Set success message
+    res.flash('success', 'Activity logged successfully!');
+    
     return res.redirect('/user/profile');
   } catch (error) {
     console.error('Error saving activity:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error. Please try again.'
-    });
+    res.formError('activityForm', 'Server error. Please try again.');
+    return res.redirect('/user/profile');
   }
 };
