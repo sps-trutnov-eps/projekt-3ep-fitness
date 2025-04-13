@@ -34,18 +34,21 @@ body {
   border-radius: 5px;
 }
 
+/* Style for the activity list */
 #activity-list {
   background: #fff;
   border: 1px solid #dee2e6;
   border-radius: 5px;
 }
 
+/* Style for the activity list item */
 #activity-list li {
   padding: 10px;
   border-bottom: 1px solid #dee2e6;
   cursor: pointer;
 }
 
+/* Style for the activity list item on hover */
 #activity-list li:hover {
   background-color: #f1f1f1;
 }
