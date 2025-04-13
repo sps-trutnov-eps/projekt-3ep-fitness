@@ -53,6 +53,7 @@ body {
   background-color: #f1f1f1;
 }
 
+/* Style for the activity from */
 #activity-form {
   background: #fff;
   padding: 15px;
@@ -61,30 +62,36 @@ body {
   margin-top: 20px;
 }
 
+/* Style for section */
 section {
   margin-bottom: 1em;
 }
 
+/* Style for the hidden table */
 .table-bordered {
   border: 1px solid #ddd !important;
 }
 
+/* Style for table */
 table {
   text-align: left;
   border-collapse: collapse;
 }
 
+/* Style for table head */
 thead {
   border-block-end: 2px solid;
   background: whitesmoke;
 }
 
+/* Style for table head and table data */
 th,
 td {
   border: 1px solid #f8f9fa;
   padding: 0.25rem 0.75rem;
 }
 
+/* Style for table data */
 td {
   background-color: white;
 }
