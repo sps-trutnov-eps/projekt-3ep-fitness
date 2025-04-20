@@ -9,56 +9,48 @@ exports.loginGet = (req, res) => {
 };
 
 exports.registerPost = async (req, res) => {
-  const { username, email, password, confirmPassword } = req.body;
-
+  const { username, password, confirmPassword } = req.body;
+  // preserve input on error
+  res.saveFormData({ username });
   if (password !== confirmPassword) {
-    return res.render('register', {
-      title: 'Register',
-      error: 'Passwords do not match.'
-    });
+    res.formError('registerForm', 'Passwords do not match.');
+    return res.redirect('/user/register');
   }
-
   try {
-    const user = new User({ username, email, password });
+    const user = new User({ username, password });
     await user.save();
-    res.redirect('/user/login');
+    // success feedback
+    res.flash('success', 'Account created successfully. Please log in.');
+    return res.redirect('/user/login');
   } catch (error) {
     console.error('Error during registration:', error);
-    res.render('register', {
-      title: 'Register',
-      error: 'Registration failed. Please try again.'
-    });
+    res.formError('registerForm', 'Registration failed. Please try again.');
+    return res.redirect('/user/register');
   }
 };
 
 exports.loginPost = async (req, res) => {
   const { username, password } = req.body;
-
+  // preserve input on error
+  res.saveFormData({ username });
   try {
     const user = await User.findOne({ username }).exec();
     if (!user) {
-      return res.render('login', {
-        title: 'Login',
-        error: 'Invalid username or password.'
-      });
+      res.formError('loginForm', 'Invalid username or password.');
+      return res.redirect('/user/login');
     }
-
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.render('login', {
-        title: 'Login',
-        error: 'Invalid username or password.'
-      });
+      res.formError('loginForm', 'Invalid username or password.');
+      return res.redirect('/user/login');
     }
-
     req.session.userId = user._id;
-    res.redirect('/user/profile');
+    res.flash('success', 'Logged in successfully.');
+    return res.redirect('/user/profile');
   } catch (error) {
     console.error('Error during login:', error);
-    res.render('login', {
-      title: 'Login',
-      error: 'Login failed. Please try again.'
-    });
+    res.formError('loginForm', 'Login failed. Please try again.');
+    return res.redirect('/user/login');
   }
 };
 

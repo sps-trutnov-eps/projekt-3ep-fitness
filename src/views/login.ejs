@@ -1,13 +1,31 @@
 <%- include('_layout/header') %>
 <div class="container">
   <h2>Login</h2>
-  <% if (typeof error !== 'undefined') { %>
-  <div class="error"><%= error %></div>
+  <% if (locals.flashMessage) { %>
+    <div class="flash-message <%= flashMessage.type %>" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; 
+         background-color: <%= flashMessage.type === 'error' ? '#FFEBEE' : 
+                             flashMessage.type === 'success' ? '#E8F5E9' : 
+                             flashMessage.type === 'warning' ? '#FFF3E0' : '#E3F2FD' %>; 
+         color: <%= flashMessage.type === 'error' ? '#F44336' : 
+                  flashMessage.type === 'success' ? '#4CAF50' : 
+                  flashMessage.type === 'warning' ? '#FF9800' : '#2196F3' %>;">
+      <%= flashMessage.message %>
+      <button onclick="this.parentElement.style.display='none'" style="float:right; background: none; border: none; cursor: pointer;">×</button>
+    </div>
   <% } %>
+
+  <% if (locals.formErrors && locals.formErrors.form === 'loginForm') { %>
+    <div class="flash-message error" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; background-color: #FFEBEE; color: #F44336;">
+      <%= formErrors.message %>
+      <button onclick="this.parentElement.style.display='none'" style="float:right; background: none; border: none; cursor: pointer;">×</button>
+    </div>
+  <% } %>
+
   <form action="/user/login" method="POST">
     <div>
       <label for="username">Username:</label>
-      <input type="text" name="username" id="username" required />
+      <input type="text" name="username" id="username" required
+             value="<%= locals.formData && formData.username ? formData.username : '' %>" />
     </div>
     <div>
       <label for="password">Password:</label>
