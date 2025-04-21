@@ -26,6 +26,15 @@ app.use(session({
 // Server static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve uploaded photos (secured by session check)
+app.get('/uploads/photos/:filename', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).send('Not authorized');
+  }
+  // Changed to use the root uploads directory
+  res.sendFile(path.join(__dirname, '../uploads/photos', req.params.filename));
+});
+
 // Initialize routes
 app.use('/', indexRouter);
 app.use('/user/', userRouter);

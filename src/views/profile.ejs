@@ -1,63 +1,56 @@
 <%- include('_layout/header') %>
+
 <div class="container">
   <h2>Profile</h2>
+
   <% if (user) { %>
-  <p>Welcome, <%= user.username %></p>
-  <section>
+    <p>Welcome, <%= user.username %></p>
+
+    <!-- Formulář pro zadání váhy -->
     <form action="/user/weight" method="POST">
       <label for="weight">Enter your weight (kg):</label>
-      <input
-        type="number"
-        name="weight"
-        id="weight"
-        step="0.1"
-        min="0"
-        required />
+      <input type="number" name="weight" id="weight" step="0.1" min="0" required />
       <button type="submit">Save</button>
     </form>
-  </section>
-  <section>
+
+    <!-- Formulář pro nahrání fotky -->
+    <form action="/user/photo" method="POST" enctype="multipart/form-data">
+      <label for="photo">Upload a progress photo:</label>
+      <input type="file" name="photo" id="photo" accept="image/*" required>
+      <button type="submit">Upload Photo</button>
+    </form>
+
+    <!-- Historie váhy -->
     <h3>Your weight history:</h3>
-    <ul>
-      <% if (user.weights && user.weights.length > 0) { %> <%
-      user.weights.forEach(weightEntry => { %>
-      <li>
-        <%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg
-      </li>
-      <% }) %> <% } else { %>
+    <% if (user.weights && user.weights.length > 0) { %>
+      <ul>
+        <% user.weights.forEach(weightEntry => { %>
+          <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
+        <% }) %>
+      </ul>
+    <% } else { %>
       <p>No weight records found.</p>
-      <% } %>
-    </ul>
-  </section>
-  <section>
-    <!-- Include the weight chart block -->
-    <%- include('partials/weightChart', { labels: weightChartLabels, weights:
-    weightChartData }) %> <% } else { %>
-    <p>No user data available.</p>
     <% } %>
-  </section>
-  <section>
+
+    <!-- Graf váhy -->
+    <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
+
+    <!-- Cílové kalorie -->
     <h3>Set your daily calorie goal:</h3>
     <form action="/user/calorie-goal" method="POST">
       <label for="calorieGoal">Calories (kcal):</label>
-      <input
-        type="number"
-        name="calorieGoal"
-        id="calorieGoal"
-        required
-        min="1" />
+      <input type="number" name="calorieGoal" id="calorieGoal" required min="1" />
       <button type="submit">Save Goal</button>
     </form>
-  </section>
-  <section>
+
     <% if (user.dailyCalorieGoal) { %>
-    <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
+      <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
     <% } %>
+
+    <!-- Aktivity -->
     <h3>Your Daily Activities</h3>
-    <!-- Scrollable activity list -->
-    <div id="activity-list" style="overflow-y: auto; padding: 5px">
+    <div id="activity-list" style="overflow-y: auto; height: 200px; border: 1px solid #ccc; padding: 5px;">
       <ul>
-        <!-- Predefined cardio options -->
         <li data-type="running" style="cursor: pointer">Running</li>
         <li data-type="cycling" style="cursor: pointer">Cycling</li>
         <li data-type="swimming" style="cursor: pointer">Swimming</li>
@@ -66,64 +59,58 @@
       </ul>
     </div>
 
-    <!-- Hidden form that appears upon clicking an activity -->
+    <!-- Formulář pro přidání aktivity -->
     <div id="activity-form" style="display: none; margin-top: 20px">
       <h4>Log Activity: <span id="selected-activity"></span></h4>
       <form id="activityForm">
         <input type="hidden" name="activityType" id="activityType" />
         <div>
           <label for="duration">Duration (minutes):</label>
-          <input
-            type="number"
-            name="duration"
-            id="duration"
-            required
-            min="1"
-            max="1439" />
+          <input type="number" name="duration" id="duration" required min="1" max="1439" />
         </div>
         <div id="customCalories" style="display: none">
           <label for="burnedCalories">Calories Burned:</label>
-          <input
-            type="number"
-            name="burnedCalories"
-            id="burnedCalories"
-            min="0" />
+          <input type="number" name="burnedCalories" id="burnedCalories" min="0" />
         </div>
         <button type="submit">Save Activity</button>
       </form>
     </div>
-  </section>
-  <section>
+
+    <!-- Celkové spálené kalorie -->
     <h3>Calories Burned (today)</h3>
     <p>
-      Total calories burned (today) from activities: <%=
-      totalCaloriesBurned.toFixed(0) %> kcal
+      Total calories burned (today) from activities: <%= totalCaloriesBurned.toFixed(0) %> kcal
     </p>
-  </section>
-  <section>
-    <h3>Today's Activities</h3>
 
+    <!-- Seznam dnešních aktivit -->
+    <h3>Today's Activities</h3>
     <% if (activities && activities.length > 0) { %>
-    <table class="table-bordered">
-      <thead>
-        <tr>
-          <th>Activity</th>
-          <th>Duration (min)</th>
-          <th>Calories Burned</th>
-        </tr>
-      </thead>
-      <% activities.forEach(activity => { %>
-      <tr>
-        <td><%= activity.type %></td>
-        <td><%= activity.duration %></td>
-        <td><%= activity.caloriesBurned.toFixed(0) %> kcal</td>
-      </tr>
-      <% }); %>
-    </table>
+      <table class="table-bordered">
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Duration (min)</th>
+            <th>Calories Burned</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% activities.forEach(activity => { %>
+            <tr>
+              <td><%= activity.type %></td>
+              <td><%= activity.duration %></td>
+              <td><%= activity.caloriesBurned.toFixed(0) %> kcal</td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
     <% } else { %>
-    <p>No activities recorded today.</p>
+      <p>No activities recorded today.</p>
     <% } %>
-  </section>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <% } else { %>
+    <p>No user data available.</p>
+  <% } %>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <%- include('_layout/footer') %>

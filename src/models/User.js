@@ -8,12 +8,19 @@ const weightEntrySchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }
 });
 
+// Add a schema for photos
+const photoSchema = new mongoose.Schema({
+  imagePath: { type: String, required: true },
+  date: { type: Date, default: Date.now }
+});
+
 const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    weights: [ weightEntrySchema ],
-    dailyCalorieGoal: { type: Number, default: 2000 }
+    weights: [weightEntrySchema],
+    dailyCalorieGoal: { type: Number, default: 2000 },
+    photos: [photoSchema]
   },
   { timestamps: true }
 );
