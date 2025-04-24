@@ -1,3 +1,4 @@
 exports.index = (req, res) => {
-    res.render('index', { title: 'Home Page' });
+  const loggedIn = !!req.session.userId;
+  res.render('index', { title: 'Home Page', loggedIn });
 };

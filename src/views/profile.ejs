@@ -1,4 +1,5 @@
 <%- include('_layout/header') %>
+
 <div class="container">
   <h2>Profile</h2>
 
@@ -28,7 +29,7 @@
   <% } %>
 
   <% if (user) { %>
-  <p>Welcome, <%= user.username %></p>
+    <p>Welcome, <%= user.username %></p>
 
   <form action="/user/weight" method="POST" id="weightForm">
     <label for="weight">Enter your weight (kg):</label>
@@ -55,58 +56,49 @@
     <button type="submit">Upload Photo</button>
   </form>
 
-  <h3>Your weight history:</h3>
-  <ul>
-    <% if (user.weights && user.weights.length > 0) { %> <%
-    user.weights.forEach(weightEntry => { %>
-    <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
-    <% }) %> <% } else { %>
-    <p>No weight records found.</p>
+    <!-- Historie váhy -->
+    <h3>Your weight history:</h3>
+    <% if (user.weights && user.weights.length > 0) { %>
+      <ul>
+        <% user.weights.forEach(weightEntry => { %>
+          <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No weight records found.</p>
     <% } %>
-  </ul>
 
-  <!-- Include the weight chart block -->
-  <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
+    <!-- Graf váhy -->
+    <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
 
-  <% } else { %>
-  <p>No user data available.</p>
-  <% } %>
+    <h3>Set your daily calorie goal:</h3>
+    <form action="/user/calorie-goal" method="POST" id="calorieForm">
+      <label for="calorieGoal">Calories (kcal):</label>
+      <input type="number" name="calorieGoal" id="calorieGoal" required min="1" 
+             value="<%= locals.formData && formData.calorieGoal ? formData.calorieGoal : '' %>" />
+      <% if (locals.formErrors && formErrors.form === 'calorieForm') { %>
+        <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+          <%= formErrors.message %>
+        </div>
+      <% } %>
+      <button type="submit">Save Goal</button>
+    </form>
 
-  <h3>Set your daily calorie goal:</h3>
-  <form action="/user/calorie-goal" method="POST" id="calorieForm">
-    <label for="calorieGoal">Calories (kcal):</label>
-    <input type="number" name="calorieGoal" id="calorieGoal" required min="1" 
-           value="<%= locals.formData && formData.calorieGoal ? formData.calorieGoal : '' %>" />
-    <% if (locals.formErrors && formErrors.form === 'calorieForm') { %>
-      <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
-        <%= formErrors.message %>
-      </div>
+    <% if (user.dailyCalorieGoal) { %>
+      <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
     <% } %>
-    <button type="submit">Save Goal</button>
-  </form>
 
-  <% if (user.dailyCalorieGoal) { %>
-  <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
-  <% } %>
-  <h3>Your Daily Activities</h3>
-  <!-- Scrollable activity list -->
-  <div
-    id="activity-list"
-    style="
-      overflow-y: auto;
-      height: 200px;
-      border: 1px solid #ccc;
-      padding: 5px;
-    ">
-    <ul>
-      <!-- Predefined cardio options -->
-      <li data-type="running" style="cursor: pointer">Running</li>
-      <li data-type="cycling" style="cursor: pointer">Cycling</li>
-      <li data-type="swimming" style="cursor: pointer">Swimming</li>
-      <li data-type="walking" style="cursor: pointer">Walking</li>
-      <li data-type="custom" style="cursor: pointer">Custom</li>
-    </ul>
-  </div>
+    <!-- Aktivity -->
+    <h3>Your Daily Activities</h3>
+    <div id="activity-list" style="overflow-y: auto; height: 200px; border: 1px solid #ccc; padding: 5px;">
+      <ul>
+        <li data-type="running" style="cursor: pointer">Running</li>
+        <li data-type="cycling" style="cursor: pointer">Cycling</li>
+        <li data-type="swimming" style="cursor: pointer">Swimming</li>
+        <li data-type="walking" style="cursor: pointer">Walking</li>
+        <li data-type="custom" style="cursor: pointer">Custom</li>
+      </ul>
+    </div>
 
   <!-- Hidden form that appears upon clicking an activity -->
   <div id="activity-form" style="display: none; margin-top: 20px">
@@ -135,76 +127,33 @@
   <h3>Calories Burned (today)</h3>
   <p>Total calories burned (today) from activities: <%= totalCaloriesBurned.toFixed(0) %> kcal</p>
 
-  <h3>Today's Activities</h3>
+    <!-- Seznam dnešních aktivit -->
+    <h3>Today's Activities</h3>
+    <% if (activities && activities.length > 0) { %>
+      <table class="table-bordered">
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Duration (min)</th>
+            <th>Calories Burned</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% activities.forEach(activity => { %>
+            <tr>
+              <td><%= activity.type %></td>
+              <td><%= activity.duration %></td>
+              <td><%= activity.caloriesBurned.toFixed(0) %> kcal</td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p>No activities recorded today.</p>
+    <% } %>
 
-  <% if (activities && activities.length > 0) { %>
-    <table border="1">
-      <tr>
-        <th>Activity</th>
-        <th>Duration (min)</th>
-        <th>Calories Burned</th>
-      </tr>
-      <% activities.forEach(activity => { %>
-        <tr>
-          <td><%= activity.type %></td>
-          <td><%= activity.duration %></td>
-          <td><%= activity.caloriesBurned.toFixed(0) %> kcal</td>
-        </tr>
-      <% }); %>
-    </table>
-  <% } else { %>
-    <p>No activities recorded today.</p>
   <% } %>
-  
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Activity form setup
-      const activityListItems = document.querySelectorAll("#activity-list li");
-      activityListItems.forEach(item => {
-        item.addEventListener("click", function() {
-          const activityType = this.getAttribute("data-type");
-          const activityTypeInput = document.getElementById("activityType");
-          const selectedActivity = document.getElementById("selected-activity");
-          const customCalories = document.getElementById("customCalories");
-          const activityForm = document.getElementById("activity-form");
-          
-          // Set the activity type in the hidden field
-          activityTypeInput.value = activityType;
-          
-          // Update the display
-          selectedActivity.textContent = activityType.charAt(0).toUpperCase() + activityType.slice(1);
-          
-          // Show/hide custom calories input
-          if (activityType.toLowerCase() === "custom") {
-            customCalories.style.display = "block";
-            document.getElementById("burnedCalories").setAttribute("required", "");
-          } else {
-            customCalories.style.display = "none";
-            document.getElementById("burnedCalories").removeAttribute("required");
-            document.getElementById("burnedCalories").value = "";
-          }
-          
-          // Show the form
-          activityForm.style.display = "block";
-        });
-      });
-      
-      // Show activity form if there was an error
-      if (window.hasActivityFormError) {
-        document.getElementById('activity-form').style.display = 'block';
-        
-        if (window.savedActivityType) {
-          document.getElementById('activityType').value = window.savedActivityType;
-          document.getElementById('selected-activity').textContent = 
-            window.savedActivityType.charAt(0).toUpperCase() + window.savedActivityType.slice(1);
-            
-          if (window.isCustomActivity) {
-            document.getElementById('customCalories').style.display = 'block';
-          }
-        }
-      }
-    }); // <-- This closing parenthesis was missing
-  </script>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <%- include('_layout/footer') %>

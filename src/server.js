@@ -27,7 +27,7 @@ app.use(session({
 app.use(require('./middleware/flash'));
 
 // Server static files
-app.use(express.static('www'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve uploaded photos (secured by session check)
 app.get('/uploads/photos/:filename', (req, res) => {
