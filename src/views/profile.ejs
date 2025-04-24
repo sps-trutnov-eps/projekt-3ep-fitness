@@ -1,155 +1,116 @@
 <%- include('_layout/header') %>
+
 <div class="container">
   <h2>Profile</h2>
+
   <% if (user) { %>
-  <p>Welcome, <%= user.username %></p>
+    <p>Welcome, <%= user.username %></p>
 
-  <form action="/user/weight" method="POST">
-    <label for="weight">Enter your weight (kg):</label>
-    <input type="number" name="weight" id="weight" step="0.1" min="0" required />
-    <button type="submit">Save</button>
-  </form>
-
-  <form action="/user/photo" method="POST" enctype="multipart/form-data">
-    <label for="photo">Upload a progress photo:</label>
-    <input type="file" name="photo" id="photo" accept="image/*" required>
-    <button type="submit">Upload Photo</button>
-  </form>
-
-  <h3>Your weight history:</h3>
-  <ul>
-    <% if (user.weights && user.weights.length > 0) { %> <%
-    user.weights.forEach(weightEntry => { %>
-    <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
-    <% }) %> <% } else { %>
-    <p>No weight records found.</p>
-    <% } %>
-  </ul>
-
-  <!-- Include the weight chart block -->
-  <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
-
-  <% } else { %>
-  <p>No user data available.</p>
-  <% } %>
-
-  <h3>Set your daily calorie goal:</h3>
-  <form action="/user/calorie-goal" method="POST">
-    <label for="calorieGoal">Calories (kcal):</label>
-    <input type="number" name="calorieGoal" id="calorieGoal" required min="1" />
-    <button type="submit">Save Goal</button>
-  </form>
-
-  <% if (user.dailyCalorieGoal) { %>
-  <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
-  <% } %>
-  <h3>Your Daily Activities</h3>
-  <!-- Scrollable activity list -->
-  <div
-    id="activity-list"
-    style="
-      overflow-y: auto;
-      height: 200px;
-      border: 1px solid #ccc;
-      padding: 5px;
-    ">
-    <ul>
-      <!-- Predefined cardio options -->
-      <li data-type="running" style="cursor: pointer">Running</li>
-      <li data-type="cycling" style="cursor: pointer">Cycling</li>
-      <li data-type="swimming" style="cursor: pointer">Swimming</li>
-      <li data-type="walking" style="cursor: pointer">Walking</li>
-      <li data-type="custom" style="cursor: pointer">Custom</li>
-    </ul>
-  </div>
-
-  <!-- Hidden form that appears upon clicking an activity -->
-  <div id="activity-form" style="display: none; margin-top: 20px">
-    <h4>Log Activity: <span id="selected-activity"></span></h4>
-    <form id="activityForm">
-      <input type="hidden" name="activityType" id="activityType" />
-      <div>
-        <label for="duration">Duration (minutes):</label>
-        <input type="number" name="duration" id="duration" required min="1" max="1439"/>
-      </div>
-      <div id="customCalories" style="display: none">
-        <label for="burnedCalories">Calories Burned:</label>
-        <input
-          type="number"
-          name="burnedCalories"
-          id="burnedCalories"
-          min="0" />
-      </div>
-      <button type="submit">Save Activity</button>
+    <!-- Formulář pro zadání váhy -->
+    <form action="/user/weight" method="POST">
+      <label for="weight">Enter your weight (kg):</label>
+      <input type="number" name="weight" id="weight" step="0.1" min="0" required />
+      <button type="submit">Save</button>
     </form>
-  </div>
 
+    <!-- Formulář pro nahrání fotky -->
+    <form action="/user/photo" method="POST" enctype="multipart/form-data">
+      <label for="photo">Upload a progress photo:</label>
+      <input type="file" name="photo" id="photo" accept="image/*" required>
+      <button type="submit">Upload Photo</button>
+    </form>
 
-  <h3>Calories Burned (today)</h3>
-  <p>Total calories burned (today) from activities: <%= totalCaloriesBurned.toFixed(0) %> kcal</p>
+    <!-- Historie váhy -->
+    <h3>Your weight history:</h3>
+    <% if (user.weights && user.weights.length > 0) { %>
+      <ul>
+        <% user.weights.forEach(weightEntry => { %>
+          <li><%= weightEntry.date.toDateString() %>: <%= weightEntry.value %> kg</li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No weight records found.</p>
+    <% } %>
 
-  <h3>Today's Activities</h3>
+    <!-- Graf váhy -->
+    <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
 
-  <% if (activities && activities.length > 0) { %>
-    <table border="1">
-      <tr>
-        <th>Activity</th>
-        <th>Duration (min)</th>
-        <th>Calories Burned</th>
-      </tr>
-      <% activities.forEach(activity => { %>
-        <tr>
-          <td><%= activity.type %></td>
-          <td><%= activity.duration %></td>
-          <td><%= activity.caloriesBurned.toFixed(0) %> kcal</td>
-        </tr>
-      <% }); %>
-    </table>
+    <!-- Cílové kalorie -->
+    <h3>Set your daily calorie goal:</h3>
+    <form action="/user/calorie-goal" method="POST">
+      <label for="calorieGoal">Calories (kcal):</label>
+      <input type="number" name="calorieGoal" id="calorieGoal" required min="1" />
+      <button type="submit">Save Goal</button>
+    </form>
+
+    <% if (user.dailyCalorieGoal) { %>
+      <p>Your daily calorie goal: <%= user.dailyCalorieGoal %> kcal</p>
+    <% } %>
+
+    <!-- Aktivity -->
+    <h3>Your Daily Activities</h3>
+    <div id="activity-list" style="overflow-y: auto; height: 200px; border: 1px solid #ccc; padding: 5px;">
+      <ul>
+        <li data-type="running" style="cursor: pointer">Running</li>
+        <li data-type="cycling" style="cursor: pointer">Cycling</li>
+        <li data-type="swimming" style="cursor: pointer">Swimming</li>
+        <li data-type="walking" style="cursor: pointer">Walking</li>
+        <li data-type="custom" style="cursor: pointer">Custom</li>
+      </ul>
+    </div>
+
+    <!-- Formulář pro přidání aktivity -->
+    <div id="activity-form" style="display: none; margin-top: 20px">
+      <h4>Log Activity: <span id="selected-activity"></span></h4>
+      <form id="activityForm">
+        <input type="hidden" name="activityType" id="activityType" />
+        <div>
+          <label for="duration">Duration (minutes):</label>
+          <input type="number" name="duration" id="duration" required min="1" max="1439" />
+        </div>
+        <div id="customCalories" style="display: none">
+          <label for="burnedCalories">Calories Burned:</label>
+          <input type="number" name="burnedCalories" id="burnedCalories" min="0" />
+        </div>
+        <button type="submit">Save Activity</button>
+      </form>
+    </div>
+
+    <!-- Celkové spálené kalorie -->
+    <h3>Calories Burned (today)</h3>
+    <p>
+      Total calories burned (today) from activities: <%= totalCaloriesBurned.toFixed(0) %> kcal
+    </p>
+
+    <!-- Seznam dnešních aktivit -->
+    <h3>Today's Activities</h3>
+    <% if (activities && activities.length > 0) { %>
+      <table class="table-bordered">
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Duration (min)</th>
+            <th>Calories Burned</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% activities.forEach(activity => { %>
+            <tr>
+              <td><%= activity.type %></td>
+              <td><%= activity.duration %></td>
+              <td><%= activity.caloriesBurned.toFixed(0) %> kcal</td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p>No activities recorded today.</p>
+    <% } %>
+
   <% } else { %>
-    <p>No activities recorded today.</p>
+    <p>No user data available.</p>
   <% } %>
-  
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script>
-    $(document).ready(function () {
-      // When an activity is clicked, show the activity form.
-      $("#activity-list li").on("click", function () {
-        var activityType = $(this).data("type");
-        $("#activityType").val(activityType);
-        $("#selected-activity").text(
-          activityType.charAt(0).toUpperCase() + activityType.slice(1)
-        );
-        // For custom activity, show extra field.
-        if (activityType.toLowerCase() === "custom") {
-          $("#customCalories").show();
-        } else {
-          $("#customCalories").hide();
-        }
-        $("#activity-form").show();
-      });
-
-      // AJAX: Submit the activity form.
-      $("#activityForm").on("submit", function (e) {
-        e.preventDefault();
-        $.ajax({
-          url: "/user/activity",
-          method: "POST",
-          data: $(this).serialize(),
-          success: function (response) {
-            alert("Activity saved successfully.");
-            // Optionally, update the UI with new activity data.
-            location.reload();
-          },
-          error: function (xhr) {
-            var errMsg =
-              xhr.responseJSON && xhr.responseJSON.error
-                ? xhr.responseJSON.error
-                : "Error saving activity";
-            alert(errMsg);
-          },
-        });
-      });
-    });
-  </script>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <%- include('_layout/footer') %>
