@@ -3,22 +3,58 @@
 <div class="container">
   <h2>Profile</h2>
 
+  <!-- Flash message display -->
+  <% if (locals.flashMessage) { %>
+    <div class="flash-message <%= flashMessage.type %>" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; 
+         background-color: <%= flashMessage.type === 'error' ? '#FFEBEE' : 
+                             flashMessage.type === 'success' ? '#E8F5E9' : 
+                             flashMessage.type === 'warning' ? '#FFF3E0' : '#E3F2FD' %>; 
+         color: <%= flashMessage.type === 'error' ? '#F44336' : 
+                  flashMessage.type === 'success' ? '#4CAF50' : 
+                  flashMessage.type === 'warning' ? '#FF9800' : '#2196F3' %>;">
+      <%= flashMessage.message %>
+      <button onclick="this.parentElement.style.display='none'" 
+              style="float:right; background: none; border: none; cursor: pointer;">×</button>
+    </div>
+  <% } %>
+
+  <% if (locals.formErrors && locals.formErrors.form === 'activityForm') { %>
+  <script>
+    window.hasActivityFormError = true;
+    <% if (locals.formData && locals.formData.activityType) { %>
+    window.savedActivityType = "<%= locals.formData.activityType %>";
+    window.isCustomActivity = <%= locals.formData.activityType.toLowerCase() === 'custom' ? 'true' : 'false' %>;
+    <% } %>
+  </script>
+  <% } %>
+
   <% if (user) { %>
     <p>Welcome, <%= user.username %></p>
 
-    <!-- Formulář pro zadání váhy -->
-    <form action="/user/weight" method="POST">
-      <label for="weight">Enter your weight (kg):</label>
-      <input type="number" name="weight" id="weight" step="0.1" min="0" required />
-      <button type="submit">Save</button>
-    </form>
+  <form action="/user/weight" method="POST" id="weightForm">
+    <label for="weight">Enter your weight (kg):</label>
+    <input type="number" name="weight" id="weight" step="0.1" min="0.1" required 
+           value="<%= locals.formData && formData.weight ? formData.weight : '' %>" />
+    <% if (locals.formErrors && formErrors.form === 'weightForm') { %>
+      <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+        <%= formErrors.message %>
+      </div>
+    <% } %>
+    <button type="submit">Save</button>
+  </form>
 
-    <!-- Formulář pro nahrání fotky -->
-    <form action="/user/photo" method="POST" enctype="multipart/form-data">
-      <label for="photo">Upload a progress photo:</label>
-      <input type="file" name="photo" id="photo" accept="image/*" required>
-      <button type="submit">Upload Photo</button>
-    </form>
+  <form id="photoUploadForm" action="/user/photo" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="photo">Upload Progress Photo</label>
+      <input type="file" id="photo" name="photo" accept="image/*" required>
+      <% if (locals.formErrors && formErrors.form === 'photoForm') { %>
+        <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+          <%= formErrors.message %>
+        </div>
+      <% } %>
+    </div>
+    <button type="submit">Upload Photo</button>
+  </form>
 
     <!-- Historie váhy -->
     <h3>Your weight history:</h3>
@@ -35,11 +71,16 @@
     <!-- Graf váhy -->
     <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
 
-    <!-- Cílové kalorie -->
     <h3>Set your daily calorie goal:</h3>
-    <form action="/user/calorie-goal" method="POST">
+    <form action="/user/calorie-goal" method="POST" id="calorieForm">
       <label for="calorieGoal">Calories (kcal):</label>
-      <input type="number" name="calorieGoal" id="calorieGoal" required min="1" />
+      <input type="number" name="calorieGoal" id="calorieGoal" required min="1" 
+             value="<%= locals.formData && formData.calorieGoal ? formData.calorieGoal : '' %>" />
+      <% if (locals.formErrors && formErrors.form === 'calorieForm') { %>
+        <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+          <%= formErrors.message %>
+        </div>
+      <% } %>
       <button type="submit">Save Goal</button>
     </form>
 
@@ -59,28 +100,32 @@
       </ul>
     </div>
 
-    <!-- Formulář pro přidání aktivity -->
-    <div id="activity-form" style="display: none; margin-top: 20px">
-      <h4>Log Activity: <span id="selected-activity"></span></h4>
-      <form id="activityForm">
-        <input type="hidden" name="activityType" id="activityType" />
-        <div>
-          <label for="duration">Duration (minutes):</label>
-          <input type="number" name="duration" id="duration" required min="1" max="1439" />
+  <!-- Hidden form that appears upon clicking an activity -->
+  <div id="activity-form" style="display: none; margin-top: 20px">
+    <h4>Log Activity: <span id="selected-activity"></span></h4>
+    <form id="activityForm" action="/user/activity" method="POST">
+      <input type="hidden" name="activityType" id="activityType" />
+      <div>
+        <label for="duration">Duration (minutes):</label>
+        <input type="number" name="duration" id="duration" required min="1" max="1439"
+               value="<%= locals.formData && formData.duration ? formData.duration : '' %>"/>
+      </div>
+      <div id="customCalories" style="display: none">
+        <label for="burnedCalories">Calories Burned:</label>
+        <input type="number" name="burnedCalories" id="burnedCalories" min="1" 
+               value="<%= locals.formData && formData.burnedCalories ? formData.burnedCalories : '' %>"/>
+      </div>
+      <% if (locals.formErrors && formErrors.form === 'activityForm') { %>
+        <div class="error-message" style="color: #F44336; font-size: 0.8rem; margin-top: 5px;">
+          <%= formErrors.message %>
         </div>
-        <div id="customCalories" style="display: none">
-          <label for="burnedCalories">Calories Burned:</label>
-          <input type="number" name="burnedCalories" id="burnedCalories" min="0" />
-        </div>
-        <button type="submit">Save Activity</button>
-      </form>
-    </div>
+      <% } %>
+      <button type="submit">Save Activity</button>
+    </form>
+  </div>
 
-    <!-- Celkové spálené kalorie -->
-    <h3>Calories Burned (today)</h3>
-    <p>
-      Total calories burned (today) from activities: <%= totalCaloriesBurned.toFixed(0) %> kcal
-    </p>
+  <h3>Calories Burned (today)</h3>
+  <p>Total calories burned (today) from activities: <%= totalCaloriesBurned.toFixed(0) %> kcal</p>
 
     <!-- Seznam dnešních aktivit -->
     <h3>Today's Activities</h3>
@@ -107,8 +152,6 @@
       <p>No activities recorded today.</p>
     <% } %>
 
-  <% } else { %>
-    <p>No user data available.</p>
   <% } %>
 </div>
 

@@ -23,6 +23,9 @@ app.use(session({
   saveUninitialized: false
 }));
 
+// Flash messages middleware
+app.use(require('./middleware/flash'));
+
 // Server static files
 app.use(express.static(path.join(__dirname, 'public')));
 
