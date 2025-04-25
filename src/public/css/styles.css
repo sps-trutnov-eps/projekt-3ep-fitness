@@ -218,7 +218,7 @@ td {
 .auth-btn {
   display: block;
   width: 100%;
-  background-color: #007bff;
+  background-color: #28a745;
   color: white;
   border: none;
   padding: 14px 15px;
@@ -230,7 +230,7 @@ td {
 }
 
 .auth-btn:hover {
-  background-color: #0069d9;
+  background-color: #208d3a;
 }
 
 .auth-footer {
