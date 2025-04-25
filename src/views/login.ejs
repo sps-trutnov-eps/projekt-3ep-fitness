@@ -1,38 +1,32 @@
 <%- include('_layout/header') %>
-<div class="container">
+<div class="auth-container">
   <h2>Login</h2>
   <% if (locals.flashMessage) { %>
-    <div class="flash-message <%= flashMessage.type %>" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; 
-         background-color: <%= flashMessage.type === 'error' ? '#FFEBEE' : 
-                             flashMessage.type === 'success' ? '#E8F5E9' : 
-                             flashMessage.type === 'warning' ? '#FFF3E0' : '#E3F2FD' %>; 
-         color: <%= flashMessage.type === 'error' ? '#F44336' : 
-                  flashMessage.type === 'success' ? '#4CAF50' : 
-                  flashMessage.type === 'warning' ? '#FF9800' : '#2196F3' %>;">
+    <div class="auth-flash-message <%= flashMessage.type %>">
       <%= flashMessage.message %>
-      <button onclick="this.parentElement.style.display='none'" style="float:right; background: none; border: none; cursor: pointer;">×</button>
+      <button onclick="this.parentElement.style.display='none'">×</button>
     </div>
   <% } %>
 
   <% if (locals.formErrors && locals.formErrors.form === 'loginForm') { %>
-    <div class="flash-message error" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; background-color: #FFEBEE; color: #F44336;">
+    <div class="auth-flash-message error">
       <%= formErrors.message %>
-      <button onclick="this.parentElement.style.display='none'" style="float:right; background: none; border: none; cursor: pointer;">×</button>
+      <button onclick="this.parentElement.style.display='none'">×</button>
     </div>
   <% } %>
 
-  <form action="/user/login" method="POST">
-    <div>
+  <form action="/user/login" method="POST" class="auth-form">
+    <div class="auth-form-group">
       <label for="username">Username:</label>
       <input type="text" name="username" id="username" required
              value="<%= locals.formData && formData.username ? formData.username : '' %>" />
     </div>
-    <div>
+    <div class="auth-form-group">
       <label for="password">Password:</label>
       <input type="password" name="password" id="password" required />
     </div>
-    <button type="submit">Login</button>
+    <button type="submit" class="auth-btn">Login</button>
   </form>
-  <p>Don't have an account? <a href="/user/register">Register here</a></p>
+  <p class="auth-footer">Don't have an account? <a href="/user/register">Register here</a></p>
 </div>
 <%- include('_layout/footer') %>
