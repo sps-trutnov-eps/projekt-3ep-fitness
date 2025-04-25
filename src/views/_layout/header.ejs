@@ -9,8 +9,16 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/css/styles.css">
+    <script>
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      const pos = sessionStorage.getItem('scrollPosition');
+      if (pos !== null) window.scrollTo(0, parseInt(pos));
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.style.visibility = 'visible';
+      });
+    </script>
   </head>
-  <body>
+  <body style="visibility:hidden">
     <div class="wrapper">
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="/">Fitness Tracker</a>

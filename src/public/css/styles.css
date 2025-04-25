@@ -95,3 +95,71 @@ td {
 td {
   background-color: white;
 }
+
+/* Toast Notifications */
+.toast-notification {
+  position: fixed;
+  top: 70px; /* Adjusted to be lower than the navbar */
+  right: 20px;
+  min-width: 250px;
+  max-width: 350px;
+  padding: 15px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-notification button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 0;
+  outline: none;
+}
+
+.toast-notification button:hover {
+  opacity: 0.7;
+}
+
+.toast-notification button:focus {
+  outline: none;
+}
+
+/* Message types */
+.toast-notification.success {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.toast-notification.error {
+  background-color: #F44336;
+  color: white;
+}
+
+.toast-notification.info {
+  background-color: #2196F3;
+  color: white;
+}
+
+.toast-notification.warning {
+  background-color: #FF9800;
+  color: white;
+}
