@@ -17,6 +17,10 @@
       <link rel="stylesheet" href="/css/progress.css">
     <% } %>
     
+    <% if (title === 'Profile') { %>
+      <link rel="stylesheet" href="/css/profile.css">
+    <% } %>
+    
     <script>
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       const pos = sessionStorage.getItem('scrollPosition');
