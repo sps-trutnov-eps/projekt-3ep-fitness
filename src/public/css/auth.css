@@ -1,0 +1,219 @@
+/* Authentication styles for login and register pages */
+
+.auth-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 0 15px;
+  width: 100%;
+}
+
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+  font-size: 2rem;
+}
+
+.auth-form {
+  background: #fff;
+  padding: 25px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  width: 100%;
+}
+
+.auth-form-group {
+  margin-bottom: 20px;
+}
+
+.auth-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.auth-form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.auth-form-group input:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.auth-btn {
+  display: block;
+  width: 100%;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 14px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.auth-btn:hover {
+  background-color: #208d3a;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.auth-footer a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.auth-flash-message {
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.auth-flash-message.error {
+  background-color: #FFEBEE;
+  color: #F44336;
+  border-left: 4px solid #F44336;
+}
+
+.auth-flash-message.success {
+  background-color: #E8F5E9;
+  color: #4CAF50;
+  border-left: 4px solid #4CAF50;
+}
+
+.auth-flash-message.warning {
+  background-color: #FFF3E0;
+  color: #FF9800;
+  border-left: 4px solid #FF9800;
+}
+
+.auth-flash-message.info {
+  background-color: #E3F2FD;
+  color: #2196F3;
+  border-left: 4px solid #2196F3;
+}
+
+.auth-flash-message button {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+.auth-flash-message button:hover {
+  opacity: 1;
+}
+
+/* Improved responsive styles */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Tablet-specific styles */
+  .auth-container {
+    max-width: 80%;
+    margin: 60px auto;
+  }
+  
+  .auth-container h2 {
+    font-size: 2.2rem;
+  }
+  
+  .auth-form {
+    padding: 30px;
+  }
+  
+  .auth-form-group label {
+    font-size: 1.1rem;
+  }
+  
+  .auth-form-group input {
+    padding: 14px;
+    font-size: 18px;
+  }
+  
+  .auth-btn {
+    padding: 16px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Mobile styles */
+  .auth-container {
+    max-width: 95%;
+    margin: 30px auto;
+  }
+  
+  .auth-container h2 {
+    font-size: 1.8rem;
+  }
+  
+  .auth-form {
+    padding: 20px 15px;
+  }
+  
+  .auth-form-group input {
+    padding: 10px;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 320px) {
+  .auth-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .auth-form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .auth-form-group input {
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  .auth-btn {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .auth-footer {
+    font-size: 0.9rem;
+  }
+}
+
+/* Prevent zooming on iOS devices when focusing inputs */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  select,
+  textarea,
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  input[type="email"] {
+    font-size: 16px !important;
+  }
+}
