@@ -1,26 +1,96 @@
 <%- include('_layout/header') %>
+
+<link rel="stylesheet" href="/css/progress.css">
+
 <div class="container">
-  <h2>My Progress</h2>
+  <h2 class="mt-4 mb-4">My Progress</h2>
 
   <% if (user) { %>
-    <h3>Progress Photos</h3>
-    <% if (photos && photos.length > 0) { %>
-      <div class="photo-gallery">
-        <% photos.forEach(photo => { %>
-          <div class="photo">
-            <img src="/uploads/photos/<%= photo.imagePath %>" alt="Progress Photo" />
-            <p><%= new Date(photo.date).toLocaleDateString() %></p>
-          </div>
-        <% }) %>
-      </div>
-    <% } else { %>
-      <p>No progress photos uploaded yet.</p>
-    <% } %>
+    <div class="progress-section">
+      <h3>Progress Photos</h3>
+      <% if (photos && photos.length > 0) { %>
+        <div class="photo-gallery">
+          <% photos.forEach((photo, index) => { %>
+            <div class="photo" data-index="<%= index %>">
+              <img src="/uploads/photos/<%= photo.imagePath %>" alt="Progress Photo" onclick="openPhotoModal(this, '<%= new Date(photo.date).toLocaleDateString() %>')" />
+              <div class="photo-info">
+                <p><%= new Date(photo.date).toLocaleDateString() %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <p>No progress photos uploaded yet.</p>
+          <a href="/user/profile" class="btn btn-primary">Upload your first photo</a>
+        </div>
+      <% } %>
+    </div>
 
-    <h3>Weight Chart</h3>
-    <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
+    <div class="progress-section">
+      <h3>Weight Progress</h3>
+      <% if (weightChartData && weightChartData.length > 0) { %>
+        <%- include('partials/weightChart', { labels: weightChartLabels, weights: weightChartData }) %>
+      <% } else { %>
+        <div class="empty-state">
+          <p>No weight data recorded yet.</p>
+          <a href="/user/profile" class="btn btn-primary">Log your weight</a>
+        </div>
+      <% } %>
+    </div>
   <% } else { %>
-    <p>User data not found. Please log in.</p>
+    <div class="progress-section">
+      <div class="empty-state">
+        <p>User data not found. Please log in to view your progress.</p>
+        <a href="/user/login" class="btn btn-primary">Log In</a>
+      </div>
+    </div>
   <% } %>
 </div>
+
+<!-- Photo Modal/Lightbox -->
+<div id="photoModal" class="photo-modal">
+  <span class="close-modal" onclick="closePhotoModal()">&times;</span>
+  <img class="modal-content" id="modalImg">
+  <div id="modalCaption" class="modal-caption"></div>
+</div>
+
+<script>
+  // Photo modal functionality
+  function openPhotoModal(imgElement, caption) {
+    const modal = document.getElementById('photoModal');
+    const modalImg = document.getElementById('modalImg');
+    const captionText = document.getElementById('modalCaption');
+    
+    modal.classList.add('active');
+    modalImg.src = imgElement.src;
+    captionText.innerHTML = caption;
+    
+    // Prevent scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+  }
+  
+  function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    modal.classList.remove('active');
+    
+    // Re-enable scrolling
+    document.body.style.overflow = 'auto';
+  }
+  
+  // Close modal when clicking outside the image
+  document.getElementById('photoModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+      closePhotoModal();
+    }
+  });
+  
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && document.getElementById('photoModal').classList.contains('active')) {
+      closePhotoModal();
+    }
+  });
+</script>
+
 <%- include('_layout/footer') %>
