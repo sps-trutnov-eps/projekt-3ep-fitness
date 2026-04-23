@@ -16,32 +16,32 @@ app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 app.set('views', 'src/views');
 
-// Setup sessions
+// Nastavení sezení (sessions)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'yourSecretKey',
   resave: false,
   saveUninitialized: false
 }));
 
-// Flash messages middleware
+// Middleware pro flash zprávy
 app.use(require('./middleware/flash'));
 
-// Server static files
+// Servírování statických souborů
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve uploaded photos (secured by session check)
+// Servírování nahrávaných fotografií (zabezpečeno kontrolou sezení)
 app.get('/uploads/photos/:filename', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send('Not authorized');
   }
-  // Changed to use the root uploads directory
+  // Použití kořenového adresáře uploads
   res.sendFile(path.join(__dirname, '../uploads/photos', req.params.filename));
 });
 
-// Initialize routes
+// Inicializace cest (routes)
 app.use('/', indexRouter);
 app.use('/user/', userRouter);
-// Connect to MongoDB and then start the server
+// Připojení k MongoDB a následné spuštění serveru
 connectDB()
   .then(() => {
     app.listen(PORT, () => {
