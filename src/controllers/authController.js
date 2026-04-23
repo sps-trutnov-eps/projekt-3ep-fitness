@@ -10,7 +10,7 @@ exports.loginGet = (req, res) => {
 
 exports.registerPost = async (req, res) => {
   const { username, password, confirmPassword } = req.body;
-  // preserve input on error
+  // zachování vstupu v případě chyby
   res.saveFormData({ username });
   if (password !== confirmPassword) {
     res.formError('registerForm', 'Passwords do not match.');
@@ -19,7 +19,7 @@ exports.registerPost = async (req, res) => {
   try {
     const user = new User({ username, password });
     await user.save();
-    // success feedback
+    // zpětná vazba o úspěchu
     res.flash('success', 'Account created successfully. Please log in.');
     return res.redirect('/user/login');
   } catch (error) {
@@ -31,7 +31,7 @@ exports.registerPost = async (req, res) => {
 
 exports.loginPost = async (req, res) => {
   const { username, password } = req.body;
-  // preserve input on error
+  // zachování vstupu v případě chyby
   res.saveFormData({ username });
   try {
     const user = await User.findOne({ username }).exec();

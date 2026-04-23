@@ -8,7 +8,7 @@ const weightEntrySchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }
 });
 
-// Add a schema for photos
+// Přidání schématu pro fotografie
 const photoSchema = new mongoose.Schema({
   imagePath: { type: String, required: true },
   date: { type: Date, default: Date.now }
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Pre-save hook to hash the user's password
+// Pre-save hook pro hashování uživatelského hesla
 userSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
   try {
@@ -37,7 +37,7 @@ userSchema.pre("save", async function(next) {
   }
 });
 
-// Method to compare candidate password with the hashed password
+// Metoda pro porovnání zadaného hesla s hashovaným heslem
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };

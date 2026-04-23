@@ -1,34 +1,34 @@
 $(document).ready(function () {
-    // Initialize flash message functionality
+    // Inicializace funkcionality flash zpráv
     initFlashMessages();
     
-    // Activity selection functionality
+    // Funkcionalita výběru aktivity
     initActivityForm();
     
-    // Check if there are form errors and the activity form should be shown
+    // Kontrola, zda jsou chyby ve formuláři a zda má být zobrazen formulář aktivity
     handleFormErrors();
     
-    // Handle scroll position restoration
+    // Zpracování obnovení pozice posunu (scroll)
     restoreScrollPosition();
     
-    // Add form submission handlers to save scroll position
+    // Přidání obslužných rutin pro odeslání formuláře pro uložení pozice posunu
     setupFormScrollHandlers();
 });
 
 function initFlashMessages() {
-  // Add click event for flash message close button
+  // Přidat událost kliknutí pro tlačítko zavření flash zprávy
   $(".flash-message button").on("click", function() {
     $(this).parent().fadeOut(300);
   });
   
-  // Auto-hide flash messages after 5 seconds
+  // Automatické skrytí flash zpráv po 5 sekundách
   setTimeout(function() {
     $(".flash-message").fadeOut(500);
   }, 5000);
 }
 
 function initActivityForm() {
-  // When an activity is clicked, show the activity form
+  // Když je kliknuto na aktivitu, zobrazit formulář aktivity
   $("#activity-list li").on("click", function () {
     var activityType = $(this).data("type");
     $("#activityType").val(activityType);
@@ -36,7 +36,7 @@ function initActivityForm() {
       activityType.charAt(0).toUpperCase() + activityType.slice(1)
     );
     
-    // For custom activity, show extra field
+    // Pro vlastní (custom) aktivitu zobrazit pole navíc
     if (activityType.toLowerCase() === "custom") {
       $("#customCalories").show();
     } else {
@@ -48,20 +48,20 @@ function initActivityForm() {
 }
 
 function handleFormErrors() {
-  // If we have activity form errors, show the form
+  // Pokud máme chyby ve formuláři aktivity, zobrazit formulář
   if (window.hasActivityFormError) {
     $("#activity-form").show();
     
-    // If we have saved activity type info, restore the form state
+    // Pokud máme uložené informace o typu aktivity, obnovit stav formuláře
     if (window.savedActivityType) {
       const activityType = window.savedActivityType;
-      // restore hidden input so submission works
+      // obnovit skrytý vstup, aby odeslání fungovalo
       $("#activityType").val(activityType.toLowerCase());
       $("#selected-activity").text(
         activityType.charAt(0).toUpperCase() + activityType.slice(1)
       );
       
-      // Show custom calories field if needed
+      // V případě potřeby zobrazit pole pro vlastní kalorie
       if (window.isCustomActivity) {
         $("#customCalories").show();
       } else {
@@ -72,15 +72,15 @@ function handleFormErrors() {
 }
 
 function setupFormScrollHandlers() {
-  // Add submit event handler to all forms
+  // Přidat obslužnou rutinu události odeslání ke všem formulářům
   $('form').on('submit', function() {
-    // Save the current scroll position in sessionStorage (more temporary than localStorage)
+    // Uložit aktuální pozici posunu do sessionStorage (dočasnější než localStorage)
     sessionStorage.setItem('scrollPosition', window.scrollY);
     
-    // Also save the form ID that was submitted
+    // Také uložit ID odeslaného formuláře
     sessionStorage.setItem('submittedFormId', this.id);
     
-    // Save form state for activity form
+    // Uložit stav pro formulář aktivity
     if (this.id === 'activityForm') {
       sessionStorage.setItem('selectedActivity', $('#selected-activity').text());
       sessionStorage.setItem('isCustomActivity', $('#customCalories').is(':visible'));
@@ -96,7 +96,7 @@ function restoreScrollPosition() {
 
     if (submittedFormId === 'activityForm') {
       if (window.hasActivityFormError) {
-        // existing code: restore and show form on error
+        // existující kód: obnovit a zobrazit formulář v případě chyby
         const selectedActivity = sessionStorage.getItem('selectedActivity');
         const isCustomActivity = sessionStorage.getItem('isCustomActivity') === 'true';
         if (selectedActivity) {
@@ -110,12 +110,12 @@ function restoreScrollPosition() {
           }
         }
       } else {
-        // close form on successful submission
+        // zavřít formulář po úspěšném odeslání
         $('#activity-form').hide();
       }
     }
 
-    // Clear the session storage values after use
+    // Vymazat hodnoty ze session storage po použití
     setTimeout(() => {
       sessionStorage.removeItem('scrollPosition');
       sessionStorage.removeItem('submittedFormId');

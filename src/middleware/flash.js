@@ -1,31 +1,31 @@
 /**
- * Flash message middleware
- * Makes flash messages, form errors and preserved form data available to templates
+ * Middleware pro flash zprávy
+ * Zpřístupňuje flash zprávy, chyby formulářů a zachovaná data formulářů pro šablony
  */
 module.exports = (req, res, next) => {
-  // Make flash messages available to templates
+  // Zpřístupnění flash zpráv pro šablony
   res.locals.flashMessage = req.session.flashMessage;
   delete req.session.flashMessage;
   
-  // Make form errors available to templates
+  // Zpřístupnění chyb formulářů pro šablony
   res.locals.formErrors = req.session.formErrors;
   delete req.session.formErrors;
   
-  // Make preserved form data available to templates
+  // Zpřístupnění zachovaných dat formulářů pro šablony
   res.locals.formData = req.session.formData;
   delete req.session.formData;
   
-  // Helper function to set flash messages from controllers
+  // Pomocná funkce pro nastavení flash zpráv z kontrolerů
   res.flash = function(type, message) {
     req.session.flashMessage = { type, message };
   };
 
-  // Helper function to set form errors from controllers  
+  // Pomocná funkce pro nastavení chyb formulářů z kontrolerů  
   res.formError = function(form, message) {
     req.session.formErrors = { form, message };
   };
   
-  // Helper function to preserve form data between requests
+  // Pomocná funkce pro zachování dat formulářů mezi požadavky
   res.saveFormData = function(data) {
     req.session.formData = data;
   };

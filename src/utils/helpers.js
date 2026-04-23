@@ -1,6 +1,6 @@
-// Common utility functions for controllers
+// Společné pomocné funkce pro kontrolery
 
-// Get today's date range (start of day to end of day)
+// Získat rozsah data pro dnešek (začátek dne do konce dne)
 exports.getTodayDateRange = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -9,7 +9,7 @@ exports.getTodayDateRange = () => {
   return { today, tomorrow };
 };
 
-// Check if user is authenticated
+// Zkontrolovat, zda je uživatel autentizován
 exports.checkAuth = (req, res) => {
   const userId = req.session.userId;
   if (!userId) {

@@ -2,7 +2,7 @@ const User = require('../models/User');
 const Activity = require('../models/Activity');
 const { getTodayDateRange, checkAuth } = require('../utils/helpers');
 
-// View-returning controllers
+// Kontrolery vracející pohledy (views)
 exports.profileGet = async (req, res) => {
   try {
     const userId = checkAuth(req, res);
@@ -15,7 +15,7 @@ exports.profileGet = async (req, res) => {
 
     const { today, tomorrow } = getTodayDateRange();
 
-    // Fetch today's activities
+    // Načtení dnešních aktivit
     const activities = await Activity.find({
       user: userId,
       date: { $gte: today, $lt: tomorrow }
@@ -23,7 +23,7 @@ exports.profileGet = async (req, res) => {
 
     const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
     
-    // Prepare chart data
+    // Příprava dat pro graf
     const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
     const weightChartData = user.weights.map(entry => entry.value);
     
@@ -41,7 +41,7 @@ exports.profileGet = async (req, res) => {
   }
 };
 
-// Regular form submission controllers
+// Kontrolery pro běžné odesílání formulářů
 exports.saveWeightPost = async (req, res) => {
   try {
     const userId = checkAuth(req, res);
@@ -50,7 +50,7 @@ exports.saveWeightPost = async (req, res) => {
     const { weight } = req.body;
     const weightValue = Number(weight);
     
-    // Save form data in case of error
+    // Uložení dat formuláře pro případ chyby
     res.saveFormData({ weight });
     
     if (isNaN(weightValue) || weightValue <= 0) {
@@ -65,7 +65,7 @@ exports.saveWeightPost = async (req, res) => {
 
     const { today } = getTodayDateRange();
 
-    // Check if weight has already been logged today
+    // Kontrola, zda již byla váha dnes zaznamenána
     const alreadyLogged = user.weights.some(entry => {
       const entryDate = new Date(entry.date);
       entryDate.setHours(0, 0, 0, 0);
@@ -77,11 +77,11 @@ exports.saveWeightPost = async (req, res) => {
       return res.redirect('/user/profile');
     }
 
-    // Save the weight entry
+    // Uložení záznamu o váze
     user.weights.push({ value: weightValue, date: new Date() });
     await user.save();
     
-    // Set success message
+    // Nastavení zprávy o úspěchu
     res.flash('success', 'Weight saved successfully!');
     
     return res.redirect('/user/profile');
@@ -99,10 +99,10 @@ exports.setCalorieGoalPost = async (req, res) => {
 
     const { calorieGoal } = req.body;
     
-    // Save form data in case of error
+    // Uložení dat formuláře pro případ chyby
     res.saveFormData({ calorieGoal });
     
-    // Convert to number and check validity
+    // Převod na číslo a kontrola platnosti
     const goal = Number(calorieGoal);
     if (isNaN(goal) || goal <= 0) {
       res.formError('calorieForm', 'Please enter a valid calorie goal');
@@ -117,7 +117,7 @@ exports.setCalorieGoalPost = async (req, res) => {
     user.dailyCalorieGoal = goal;
     await user.save();
 
-    // Set success message
+    // Nastavení zprávy o úspěchu
     res.flash('success', 'Calorie goal saved successfully!');
 
     return res.redirect('/user/profile');
@@ -135,7 +135,7 @@ exports.saveActivityPost = async (req, res) => {
 
     const { activityType, duration, burnedCalories } = req.body;
     
-    // Save form data in case of error
+    // Uložení dat formuláře pro případ chyby
     res.saveFormData({ activityType, duration, burnedCalories });
     
     if (!activityType || !duration) {
@@ -148,7 +148,7 @@ exports.saveActivityPost = async (req, res) => {
       return res.redirect('/user/login');
     }
 
-    // Calculate calories
+    // Výpočet kalorií
     let calories;
     let userWeight = user.weights && user.weights.length > 0
       ? user.weights[user.weights.length - 1].value
@@ -166,7 +166,7 @@ exports.saveActivityPost = async (req, res) => {
         return res.redirect('/user/profile');
       }
       
-      // Define MET values for known cardio activities
+      // Definice hodnot MET pro známé kardio aktivity
       const mets = {
         running: 9,
         cycling: 8,
@@ -178,17 +178,17 @@ exports.saveActivityPost = async (req, res) => {
       calories = Math.round(userWeight * met * (Number(duration) / 60));
     }
 
-    // Create and save the new activity record
+    // Vytvoření a uložení nového záznamu o aktivitě
     const newActivity = new Activity({
       user: userId,
       type: activityType,
       duration: Number(duration),
       caloriesBurned: calories,
-      date: new Date()  // Ensure date is set
+      date: new Date()  // Zajistit nastavení data
     });
     await newActivity.save();
 
-    // Set success message
+    // Nastavení zprávy o úspěchu
     res.flash('success', 'Activity logged successfully!');
     
     return res.redirect('/user/profile');

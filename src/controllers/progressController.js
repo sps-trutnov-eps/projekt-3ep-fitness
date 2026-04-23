@@ -6,7 +6,7 @@ const { getTodayDateRange, checkAuth } = require('../utils/helpers');
 
 exports.uploadPhotoPost = async (req, res) => {
   try {
-    // Check authentication - redirect if not logged in
+    // Kontrola autentizace - přesměrování, pokud uživatel není přihlášen
     const userId = checkAuth(req, res);
     if (!userId) return;
     
@@ -20,7 +20,7 @@ exports.uploadPhotoPost = async (req, res) => {
       return res.redirect('/user/login');
     }
 
-    // Check if photo already uploaded today
+    // Kontrola, zda již byla fotografie dnes nahrána
     const { today } = getTodayDateRange();
     const alreadyUploaded = user.photos && user.photos.some(photo => {
       const photoDate = new Date(photo.date);
@@ -33,30 +33,30 @@ exports.uploadPhotoPost = async (req, res) => {
       return res.redirect('/user/profile');
     }
 
-    // Create uploads directory if it doesn't exist
+    // Vytvoření adresáře pro nahrávání, pokud neexistuje
     const uploadsDir = path.join(__dirname, '../../uploads/photos');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    // Generate unique filename
+    // Generování unikátního názvu souboru
     const fileExtension = path.extname(req.file.originalname);
     const fileName = `${uuidv4()}${fileExtension}`;
     const filePath = path.join(uploadsDir, fileName);
 
-    // Write the file to disk
+    // Zápis souboru na disk
     fs.writeFileSync(filePath, req.file.buffer);
 
-    // Ensure the photos array exists
+    // Zajistit, aby pole photos existovalo
     if (!user.photos) {
       user.photos = [];
     }
 
-    // Add photo reference to user
+    // Přidání odkazu na fotografii k uživateli
     user.photos.push({ imagePath: fileName, date: new Date() });
     await user.save();
 
-    // Set success message
+    // Nastavení zprávy o úspěchu
     res.flash('success', 'Photo uploaded successfully!');
 
     return res.redirect('/user/profile');
@@ -77,7 +77,7 @@ exports.showProgressGet = async (req, res) => {
       return res.redirect('/user/login');
     }
     
-    // Prepare chart data for weights
+    // Příprava dat pro graf váhy
     const weightChartLabels = user.weights.map(entry => entry.date.toDateString());
     const weightChartData = user.weights.map(entry => entry.value);
     
