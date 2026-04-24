@@ -23,7 +23,7 @@ Tento projekt je webová aplikace pro sledování fitness cílů, která umožň
 
 1. **Klonování repozitáře:**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/sps-trutnov-eps/projekt-3ep-fitness.git
    cd projekt-3ep-fitness
    ```
 
