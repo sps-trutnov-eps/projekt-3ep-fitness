@@ -1,3 +1,5 @@
+> Žákovský projekt třídy 3.EP, školní rok 2025/26, SPŠ Trutnov. Projekt se už neudržuje.
+
 # Fitness Tracker - Osobní Fitness Aplikace
 
 Tento projekt je webová aplikace pro sledování fitness cílů, která umožňuje uživatelům monitorovat svou váhu, denní příjem kalorií a fyzické aktivity. Projekt byl vytvořen jako ukázka dovedností ve full-stack vývoji s použitím moderních technologií.
